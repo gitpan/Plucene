@@ -1,4 +1,5 @@
 Build.PL
+Changes
 MANIFEST
 Makefile.PL
 README
@@ -100,9 +101,6 @@ t/datesearch.t
 t/dateserializer.t
 t/deletable.t
 t/indexsearcher.t
-t/internal/compatibility01.t
-t/internal/compatibility04.t
-t/internal/compatibility05.t
 t/queryparser.t
 t/regress-01.t
 t/regress-02.t

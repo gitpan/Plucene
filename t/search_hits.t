@@ -9,7 +9,7 @@ t/search_hits.t - tests Plucene/Search/Hits.pm
 use strict;
 use warnings;
 
-use Lucene::QueryParser;
+use Plucene::QueryParser;
 use Plucene::Search::HitCollector;
 use Plucene::Search::IndexSearcher;
 use Plucene::Analysis::SimpleAnalyzer;
@@ -69,7 +69,12 @@ index_documents_Perl();
 #------------------------------------------------------------------------------
 
 my $plucy = Plucene::Search::IndexSearcher->new(DIRECTORY);
-my $query = (parse_query("name:perl"))->to_plucene;
+
+my $p = Plucene::QueryParser->new({
+		analyzer => Plucene::Analysis::SimpleAnalyzer->new,
+		default  => "text"
+	});
+my $query = $p->parse("name:perl");
 
 isa_ok my $hits = $plucy->search($query) => 'Plucene::Search::Hits';
 

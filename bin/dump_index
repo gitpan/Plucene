@@ -1,6 +1,8 @@
 #!/usr/bin/perl
 
-=head1 NAME - dump_index
+=head1 NAME
+
+dump_index - dump the contents of an index
 
 =head1 SYNOPSIS
 

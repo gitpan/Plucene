@@ -72,7 +72,7 @@ Plucene comes shipped with some default Analyzsers. However it is
 expected that users will want to create Analyzers to meet their own
 needs. To avoid namespace corruption, anyone releasing such Analyzers
 to CPAN (which is encouraged!) should place them in the namespace
-Lucene::Plugin::Analyzer::.
+Plucene::Plugin::Analyzer::.
 
 =head1 DOCUMENTATION
 
@@ -135,6 +135,6 @@ This software is licensed under the same terms as Perl itself.
 use strict;
 use warnings;
 
-our $VERSION = "1.0";
+our $VERSION = "1.01";
 
 1;

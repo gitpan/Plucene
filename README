@@ -17,8 +17,10 @@ subclass the base modules to create your own.
 More information
 ================
 
-The Plucene web site is at ....
-There is a mailing list at ....
+Bug reports, patches, queries, discussion etc should be addressed to
+the mailing list. More information on the list can be found at:
+
+http://www.kasei.com/mailman/listinfo/plucene
 
 Of course, since Plucene is almost a straight port of Java Lucene,
 everything said about Lucene at http://jakarta.apache.org/lucene/ should

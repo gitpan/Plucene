@@ -9,7 +9,6 @@ t/tokenizer.t - tests Plucene/Analysis/Tokenizer.pn
 use strict;
 use warnings;
 
-use Lucene::QueryParser;
 use Plucene::Search::HitCollector;
 use Plucene::Search::IndexSearcher;
 use Plucene::Analysis::SimpleAnalyzer;

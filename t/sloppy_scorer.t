@@ -9,7 +9,7 @@ t/sloppy_scorer.t - tests Plucene/Search/PhraseScorer/Sloppy.pm
 use strict;
 use warnings;
 
-use Lucene::QueryParser;
+use Plucene::QueryParser;
 use Plucene::Search::HitCollector;
 use Plucene::Search::IndexSearcher;
 use Plucene::Analysis::SimpleAnalyzer;
@@ -73,11 +73,13 @@ index_documents_Perl();
 # Tests
 #------------------------------------------------------------------------------
 
-#isa_ok my $scorer = Plucene::Search::PhraseScorer::Sloppy->new
-#	=> 'Plucene::Search::PhraseScorer::Sloppy';
-
 # construct a phrase query
-my $query = (parse_query("name:\"perl advanced\""))->to_plucene;
+
+my $p = Plucene::QueryParser->new({
+		analyzer => Plucene::Analysis::SimpleAnalyzer->new,
+		default  => "text"
+	});
+my $query = $p->parse("name:\"perl advanced\"");
 $query->slop(1);
 
 # get a searcher

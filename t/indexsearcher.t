@@ -9,7 +9,6 @@ t/indexsearcher.t - tests Plucene/Search/IndexSearcher.pm
 use strict;
 use warnings;
 
-use Lucene::QueryParser;
 use Plucene::Search::HitCollector;
 use Plucene::Search::IndexSearcher;
 use Plucene::Analysis::SimpleAnalyzer;

@@ -9,8 +9,6 @@ t/segments - tests Plucene/Index/SegmentsReader.pm
 use strict;
 use warnings;
 
-use Lucene::QueryParser;
-
 use Plucene::Search::HitCollector;
 use Plucene::Search::IndexSearcher;
 
