@@ -115,6 +115,11 @@ sub doc_count {
 =head2 add_document
 
 	$writer->add_document($doc);
+
+Adds a document to the index. After the document has been added, a merge takes
+place if there are more than C<$Plucene::Index::Writer::mergefactor> segments
+in the index. This defaults to 10, but can be set to whatever value is optimal 
+for your application.   
 	
 =cut
 
@@ -163,7 +168,8 @@ sub _flush {
 	$writer->optimize;
 
 Merges all segments together into a single segment, optimizing an index
-for search. 
+for search. This should be the last method called on an indexer, as it 
+invalidates the writer object.
 
 =cut
 

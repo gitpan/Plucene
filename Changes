@@ -1,3 +1,7 @@
+1.04 - Fri Feb 06 2004
+	* Doc change to clarify what optimize() does to a writer
+	* Removed tell call from Plucene::Store::InputStream::read_byte
+
 1.03 - Thu Feb 05 2004
 
 	* Added in use of Enocde::compat to ensure works with < 5.7

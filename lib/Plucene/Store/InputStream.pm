@@ -19,9 +19,6 @@ A random-access input stream.Used for all Plucene index input operations.
 use strict;
 use warnings;
 
-use Carp qw(confess);
-
-#use Encode::compat;
 use Encode qw(_utf8_on);    # Magic
 use File::Spec::Functions;
 use Cwd;
@@ -72,13 +69,7 @@ This will read and return a single byte.
 
 =cut
 
-sub read_byte {
-	my $self = shift;
-	confess("Unexpectedly hit EOF") if $self->eof;
-	my $pos  = $self->tell;
-	my $byte = ord $self->getc;
-	return $byte;
-}
+sub read_byte { ord shift->getc }
 
 =head2 read_int
 
