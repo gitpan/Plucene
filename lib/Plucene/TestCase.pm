@@ -18,11 +18,10 @@ Plucene::TestCase - Handy functions when testing Plucene
 	}
 
 	with_reader {
-		my $reader = shift;
-		$reader->whatever;
+		$READER->whatever;
 	}
 
-	my @ids = search("foo:ba*");
+	my $hits = search("foo:ba*");
 
 =head1 EXPORTS
 
@@ -146,9 +145,9 @@ sub with_reader (&) {
 =item search
 
 Searches for the query given. If any fields are not specified, they will
-be assumed to be the default C<text>. Returns a list of IDs. The value
-of C<$ANALYZER> will be used to construct an analyzer for the query
-string.
+be assumed to be the default C<text>. Returns a C<Plucene::Search::Hits>
+object. The value of C<$ANALYZER> will be used to construct an analyzer
+for the query string.
 
 =cut
 

@@ -143,6 +143,8 @@ sub read {
 	my (@docs, @freqs);
 	while ($self->{freq_count} > 0) {
 		$self->_read_one;
+		next if $self->{deleted_docs}
+			&& $self->{deleted_docs}->get($self->{doc});
 		push @docs,  $self->doc;
 		push @freqs, $self->freq;
 	}

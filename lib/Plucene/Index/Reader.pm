@@ -126,7 +126,7 @@ This will delete all the documents which contain the passed term.
 sub delete_term {
 	my ($self, $term) = @_;
 	my $enum = $self->term_docs($term);
-	do { $self->delete($enum->doc) } until !$enum->next;
+	$self->delete($enum->doc) while $enum->next;
 }
 
 =head2 close

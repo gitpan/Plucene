@@ -46,10 +46,14 @@ This will create a new Plucene::Index::TermInfosWriter object.
 
 sub new {
 	my ($class, $d, $segment, $fis, $is_i) = @_;
+	my %tis_cache;
+	tie %tis_cache, "DB_File", "$d/tiscache.$segment";
+
 	my $self = bless {
 		field_infos    => $fis,
 		is_index       => $is_i,
 		size           => 0,
+		cache          => \%tis_cache,
 		last_term      => Plucene::Index::Term->new({ field => "", text => "" }),
 		last_ti        => Plucene::Index::TermInfo->new,
 		last_index_ptr => 0,
@@ -113,6 +117,8 @@ sub add {
 		$self->{last_index_pointer} = $self->{other}->{output}->tell;
 	}
 
+	my $key = join(":", $term->field, $term->text);
+	$self->{cache}{$key} = join(":", $ti->doc_freq, $ti->freq_pointer, $ti->prox_pointer);
 	$self->{last_ti}->copy_in($ti);
 	$self->{size}++;
 }

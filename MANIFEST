@@ -99,6 +99,7 @@ t/data/book9
 t/data/preface
 t/datesearch.t
 t/dateserializer.t
+t/delete.t
 t/deletable.t
 t/indexsearcher.t
 t/mergefactor.t
@@ -119,3 +120,4 @@ t/tokenfilter.t
 t/tokenizer.t
 t/utf8.t
 t/words.txt
+META.yml                                 Module meta-data (added by MakeMaker)
