@@ -19,6 +19,7 @@ A random-access input stream.Used for all Plucene index input operations.
 use strict;
 use warnings;
 
+use Encode::compat;
 use Encode qw(_utf8_on);    # Magic
 
 =head2 new

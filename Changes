@@ -1,3 +1,6 @@
+1.12 - TueMar 23 2004
+	* Put back Encode::compat
+
 1.11 - Tue Mar 23 2004
 	* More speed up patches (thanks to Marty Pauley and Tony Bowden)
 
