@@ -28,7 +28,6 @@ use strict;
 use warnings;
 
 use Carp;
-use File::Spec::Functions qw(catfile);
 
 use Plucene::Index::SegmentInfo;
 use Plucene::Store::InputStream;
@@ -54,18 +53,18 @@ This will read the segments file from the passed directory.
 
 sub read {
 	my ($self, $directory) = @_;
-	my $stream =
-		Plucene::Store::InputStream->new(catfile($directory, "segments"));
+	my $stream = Plucene::Store::InputStream->new("$directory/segments");
 
 	my $count    = $stream->read_int;
 	my $segments = $stream->read_int;
 	my @segs;
-	push @segs, new Plucene::Index::SegmentInfo({
-			name      => $stream->read_string,
-			doc_count => $stream->read_int,
-			dir       => $directory
-		})
-		for (1 .. $segments);
+	push @segs,
+		bless {
+		name      => $stream->read_string,
+		doc_count => $stream->read_int,
+		dir       => $directory
+		} => 'Plucene::Index::SegmentInfo'
+		for 1 .. $segments;
 	$self->{segments} = \@segs;
 	$self->{counter}  = $count;
 }
@@ -80,8 +79,8 @@ This will write the segments info file out.
 
 sub write {
 	my ($self, $directory) = @_;
-	my $segfile = catfile($directory, "segments");
-	my $output = Plucene::Store::OutputStream->new($segfile . ".new");
+	my $segfile = "$directory/segments";
+	my $output  = Plucene::Store::OutputStream->new($segfile . ".new");
 	$output->write_int($self->{counter});
 	$output->write_int(scalar @{ $self->{segments} });
 	for my $seg ($self->segments) {
@@ -100,10 +99,7 @@ This will add the passed Plucene::Index::SegmentInfo object..
 
 =cut
 
-sub add_element {
-	my ($self, $seg) = @_;
-	push @{ $self->{segments} }, $seg;
-}
+sub add_element { push @{ $_[0]->{segments} }, $_[1] }
 
 =head2 info
 
@@ -115,10 +111,7 @@ segment number.
 
 =cut
 
-sub info {
-	my ($self, $seg_no) = @_;
-	return $self->{segments}->[$seg_no];
-}
+sub info { $_[0]->{segments}->[ $_[1] ] }
 
 =head2 segments
 
@@ -129,6 +122,6 @@ This returns all the Plucene::Index::SegmentInfo onjects in this segment.
 
 =cut
 
-sub segments { @{ shift->{segments} } }
+sub segments { @{ $_[0]->{segments} } }
 
 1;

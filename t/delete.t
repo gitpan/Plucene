@@ -24,21 +24,22 @@ use Test::More tests => 3;
 
 my $term = "aaa";
 new_index {
-	add_document(contents => $term++) for (1..50);
+	add_document(contents => $term++) for (1 .. 50);
 };
 
 my $hits = search("contents:aaa");
-is( @{ $hits->{hit_docs} }, 1, "Found one");
+is(@{ $hits->{hit_docs} }, 1, "Found one");
 my $to_delete = Plucene::Index::Term->new({
-        field => "contents",
-        text  => "aaa" });
+		field => "contents",
+		text  => "aaa"
+	});
 with_reader {
-    $READER->delete_term($to_delete);
+	$READER->delete_term($to_delete);
 };
 
 with_reader {
-    ok($READER->is_deleted(0), "aaa marked as deleted");
+	ok($READER->is_deleted(0), "aaa marked as deleted");
 };
 
 $hits = search("contents:aaa");
-is( @{ $hits->{hit_docs} }, 0, "Found nil");
+is(@{ $hits->{hit_docs} }, 0, "Found nil");

@@ -110,6 +110,7 @@ sub delete {
 		$self->{writelock} = "$self->{directory}/write.lock";
 		sysopen FH, $self->{writelock}, O_EXCL | O_CREAT | O_WRONLY
 			or croak "Couldn't get lock";
+		close *FH;
 	}
 	$self->_do_delete($doc);
 	unlink "$self->{directory}/write.lock";
@@ -148,7 +149,6 @@ sub close {
 =cut
 
 sub unlock {
-	my ($self, $directory) = @_;
 	unlink "$_[1]/write.lock";
 	unlink "$_[1]/commit.lock";
 }

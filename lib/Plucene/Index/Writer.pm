@@ -50,7 +50,6 @@ use Plucene::Utils;
 use constant MAX_FIELD_LENGTH => 10_000;
 
 our $max_merge_docs = ~0;
-our $DEBUG          = 0;
 
 =head2 new
 
@@ -86,6 +85,7 @@ sub new {
 	local *FH;
 	sysopen FH, $lock, O_EXCL | O_CREAT | O_WRONLY
 		or croak "Couldn't get lock";
+	close *FH;
 
 	do_locked {
 		$create
@@ -249,7 +249,6 @@ sub _maybe_merge_segments {
 			$merge_docs += $si->doc_count;
 		}
 		last unless $merge_docs >= $target_merge_docs;
-		warn "It's time to do a merge\n" if $DEBUG;
 		$self->_merge_segments($min_seg + 1);
 		$target_merge_docs *= $self->mergefactor;
 	}

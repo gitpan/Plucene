@@ -30,9 +30,6 @@ This is the segment term enum class.
 use strict;
 use warnings;
 
-use Carp qw/confess/;
-
-use Plucene::Index::FieldInfos;
 use Plucene::Index::TermInfo;
 use Plucene::Index::Term;
 
@@ -62,7 +59,7 @@ sub prox_pointer { shift->term_info->prox_pointer(@_) }
 
 sub new {
 	my ($class, $i, $fis, $is_i) = @_;
-	my $self = bless {
+	bless {
 		input       => $i,
 		field_infos => $fis,
 		is_index    => $is_i,
@@ -71,9 +68,6 @@ sub new {
 		term_info   => Plucene::Index::TermInfo->new(),
 		size        => $i->read_int
 	}, $class;
-	confess("SIZE IS 0") unless $self->{size};
-	$self;
-
 }
 
 =head2 clone
@@ -85,8 +79,8 @@ sub new {
 sub clone {
 	my $self = shift;
 	my $clone = bless { %$self, input => $self->{input}->clone, }, ref $self;
-	if ($self->{term}) { $clone->{buffer} = $self->{term}->text }
-	$clone;
+	$clone->{buffer} = $self->{term}->text if $self->{term};
+	return $clone;
 }
 
 =head2 seek
@@ -112,7 +106,7 @@ sub seek {
 
 =cut
 
-sub prev { return shift->{prev} }
+sub prev { return $_[0]->{prev} }
 
 sub next {
 	my $self = shift;
@@ -125,10 +119,7 @@ sub next {
 	$self->{term_info}->doc_freq($self->{input}->read_vint);
 	$self->{term_info}->{freq_pointer} += $self->{input}->read_vlong;
 	$self->{term_info}->{prox_pointer} += $self->{input}->read_vlong;
-
-	if ($self->{is_index}) {
-		$self->{index_pointer} += $self->{input}->read_vlong;
-	}
+	$self->{index_pointer} += $self->{input}->read_vlong if $self->{is_index};
 	return 1;
 }
 
@@ -145,12 +136,10 @@ sub read_term {
 	$self->{buffer} ||= " " x $length;
 	$self->{input}->read(substr($self->{buffer}, $start, $length), $length);
 	$self->{buffer} = substr($self->{buffer}, 0, $start + $length);
-	my $field      = $self->{input}->read_vint();
-	my $field_name = $self->{field_infos}->field_name($field);
-	return Plucene::Index::Term->new({
-			text  => $self->{buffer},
-			field => $field_name,
-		});
+	return bless {
+		text  => $self->{buffer},
+		field => $self->{field_infos}->field_name($self->{input}->read_vint),
+	} => 'Plucene::Index::Term';
 }
 
 1;

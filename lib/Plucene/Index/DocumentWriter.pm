@@ -30,7 +30,6 @@ use Plucene::Index::TermInfosWriter;
 use Plucene::Search::Similarity;
 use Plucene::Store::OutputStream;
 
-use File::Spec::Functions qw(catfile);
 use IO::Scalar;
 
 =head2 new
@@ -63,7 +62,7 @@ sub add_document {
 	my ($self, $segment, $doc) = @_;
 	my $fi = Plucene::Index::FieldInfos->new();
 	$fi->add($doc);
-	$fi->write(catfile($self->{directory}, $segment . ".fnm"));
+	$fi->write("$self->{directory}/$segment.fnm");
 	$self->{field_infos} = $fi;
 
 	my $fw =
@@ -73,9 +72,7 @@ sub add_document {
 	$self->{field_lengths} = [];
 	$self->_invert_document($doc);
 	my @postings = sort {
-
-		#  $a->term->_cmp($b->term)
-		$a->{term}->{field} cmp $b->{term}->{field}
+		     $a->{term}->{field} cmp $b->{term}->{field}
 			|| $a->{term}->{text} cmp $b->{term}->{text}
 	} values %{ $self->{postings} };
 
@@ -123,11 +120,9 @@ sub _add_position {
 sub _write_postings {
 	my ($self, $segment, @postings) = @_;
 	my $freq =
-		Plucene::Store::OutputStream->new(
-		catfile($self->{directory}, "$segment.frq"));
+		Plucene::Store::OutputStream->new("$self->{directory}/$segment.frq");
 	my $prox =
-		Plucene::Store::OutputStream->new(
-		catfile($self->{directory}, "$segment.prx"));
+		Plucene::Store::OutputStream->new("$self->{directory}/$segment.prx");
 	my $tis =
 		Plucene::Index::TermInfosWriter->new($self->{directory}, $segment,
 		$self->{field_infos});
@@ -164,8 +159,7 @@ sub _write_norms {
 		warn "Couldn't find field @{[ $field->name ]} in list [ @{[ map
 			$_->name, $self->{field_infos}->fields]}]" unless $fn >= 0;
 		my $norm =
-			Plucene::Store::OutputStream->new(
-			catfile($self->{directory}, "$segment.f$fn"));
+			Plucene::Store::OutputStream->new("$self->{directory}/$segment.f$fn");
 		my $val      = $self->{field_lengths}[$fn];
 		my $norm_val = Plucene::Search::Similarity->norm($val);
 		$norm->print(chr($norm_val));

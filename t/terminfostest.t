@@ -7,6 +7,7 @@ use File::Path;
 use File::Temp qw/tempdir/;
 
 use constant DIRECTORY => tempdir();
+use Plucene::Index::FieldInfos;
 
 END { rmtree DIRECTORY }
 

@@ -8,13 +8,6 @@ use Plucene::TestCase;
 use File::Slurp;
 use Plucene::Analysis::WhitespaceAnalyzer;
 
-use File::Path;
-
-$DIR = "t/homer_index/$$";
-
-BEGIN { mkpath $DIR }
-END   { rmtree $DIR }
-
 diag "Indexing the entire Odyssey. This may take some time\n";
 new_index {
 	for my $file (<t/data/*>) {

@@ -45,6 +45,7 @@ sub do_locked (&$) {
 	carp "Couldn't get lock $lock: $!";
 	got_lock:
 	$sub->();
+	close *FH;
 	unlink $lock;
 }
 

@@ -29,7 +29,6 @@ use warnings;
 use constant INDEX_INTERVAL => 128;
 
 use Carp qw(confess carp);
-use File::Spec::Functions qw(catfile);
 
 use Plucene::Store::OutputStream;
 use Plucene::Index::Term;
@@ -55,7 +54,7 @@ sub new {
 		last_ti        => Plucene::Index::TermInfo->new,
 		last_index_ptr => 0,
 		output         => Plucene::Store::OutputStream->new(
-			my $n = catfile($d, $segment . ".ti" . ($is_i ? "i" : "s"))
+			"$d/$segment.ti" . ($is_i ? "i" : "s")
 		),
 	}, $class;
 	confess("No field_infos!") unless $self->{field_infos};

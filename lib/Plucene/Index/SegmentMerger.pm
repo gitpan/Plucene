@@ -23,8 +23,6 @@ use strict;
 use warnings;
 no warnings 'uninitialized';
 
-use Carp qw(confess croak cluck carp);
-use constant DEBUG => 0;
 use Tie::Array::Sorted;
 
 use Plucene::Index::FieldInfos;
@@ -119,7 +117,6 @@ sub _merge_term_infos {
 			|| $_[0]->base <=> $_[1]->base;
 	};    # This is a SegmentMergeQueue
 
-	die "We have no readers!" unless @{ $self->{readers} };
 	for my $reader (@{ $self->{readers} }) {
 		my $smi =
 			Plucene::Index::SegmentMergeInfo->new($base, $reader->terms, $reader);
@@ -170,10 +167,8 @@ sub _merge_norms {
 		my $output =
 			Plucene::Store::OutputStream->new(my $file =
 				"$self->{dir}/$self->{segment}.f$_");
-		print "Writing merged norm stream $file\n" if DEBUG;
 		for my $reader (@{ $self->{readers} }) {
 			my $input = $reader->norm_stream($fi->name);
-			print "Writing norms for field " . $fi->name . "\n" if DEBUG;
 			for (0 .. $reader->max_doc - 1) {
 				$output->print(chr($input ? $input->read_byte : 0))
 					unless $reader->is_deleted($_);

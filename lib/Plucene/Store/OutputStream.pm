@@ -66,7 +66,7 @@ sub read  { croak "OutputStream read called" }
 sub seek  { CORE::seek $_[0]->[0], $_[1], $_[2] }
 sub tell  { CORE::tell $_[0]->[0] }
 sub getc  { croak "OutputStream getc called" }
-sub print { my $fh = shift->[0]; CORE::print $fh @_ }
+sub print { local $\; my $fh = shift->[0]; CORE::print $fh @_ }
 sub eof   { CORE::eof $_[0]->[0] }
 sub close { CORE::close $_[0]->[0] }
 
@@ -77,6 +77,7 @@ This will write a single byte.
 =cut
 
 sub write_byte {
+	local $\;
 	CORE::print { $_[0]->[0] } $_[1];
 }
 
@@ -87,6 +88,7 @@ This will write an int as four bytes.
 =cut
 
 sub write_int {
+	local $\;
 	CORE::print { $_[0]->[0] } pack("N", $_[1]);
 }
 
@@ -97,6 +99,7 @@ This will write an int in a variable length format.
 =cut
 
 sub write_vint {
+	local $\;
 	use bytes;
 	my $i = $_[1];
 	my $txt;
@@ -115,6 +118,7 @@ This will write a long as eight bytes.
 =cut
 
 sub write_long {
+	local $\;
 	CORE::print { $_[0]->[0] }
 		pack("NN", 0xffffffff & ($_[1] >> 32), 0xffffffff & $_[1]);
 }
@@ -134,6 +138,7 @@ This will write a string.
 =cut
 
 sub write_string {
+	local $\;
 	my $s = $_[1];
 	$s = encode("utf8", $s) if $s =~ /[^\x00-\x7f]/;
 	$_[0]->write_vint(length $s);

@@ -40,9 +40,6 @@ The segment reader class.
 use strict;
 use warnings;
 
-use Carp qw/confess/;
-use constant DEBUG => 0;
-
 use Plucene::Bitvector;
 use Plucene::Index::FieldInfos;
 use Plucene::Index::FieldsReader;
@@ -70,7 +67,6 @@ This will create a new Plucene::Index::SegmentReader object.
 
 sub new {
 	my ($class, $si) = @_;
-	confess "No directory!" unless $si->dir;
 	my $self = $class->SUPER::new($si->dir);
 	my $segment = $self->{segment} = $si->name;
 	$self->field_infos(
@@ -302,7 +298,6 @@ sub _open_norms {
 	for my $fi (grep $_->is_indexed, $self->field_infos->fields) {
 		my $file = "$self->{directory}/$self->{segment}.f" . $fi->number;
 		my $fh = Plucene::Store::InputStream->new($file) or die $file . " :" . $!;
-		warn "Opening norm stream $file for " . $fi->name if DEBUG;
 		$self->{norms}{ $fi->name } = Plucene::Index::Norm->new($fh);
 	}
 }

@@ -36,6 +36,7 @@ use strict;
 use warnings;
 
 use Carp qw(confess cluck);
+use File::Slurp;
 
 use Plucene::Document;
 use Plucene::Document::Field;
@@ -93,13 +94,12 @@ sub add {
 
 sub _add_internal {
 	my ($self, $name, $indexed) = @_;
-	my $fi = Plucene::Index::FieldInfo->new({
-			name       => $name,
-			is_indexed => $indexed,
-			number     => 0
-		});
+	my $fi = bless {
+		name       => $name,
+		is_indexed => $indexed,
+		number     => $#{ $self->{bynumber} } + 1,
+	} => 'Plucene::Index::FieldInfo';
 	push @{ $self->{bynumber} }, $fi;
-	$fi->number($#{ $self->{bynumber} });
 	$self->{byname}{$name} = $fi;
 }
 
@@ -170,20 +170,22 @@ This will write the field info objects to $path.
 
 # Called by DocumentWriter->add_document and
 # SegmentMerger->merge_fields
+
 sub write {
-	my ($self, $path) = @_;
-	my $output = Plucene::Store::OutputStream->new($path);
-	$output->write_vint(scalar @{ $self->{bynumber} });
-	for my $fi (@{ $self->{bynumber} }) {
-		$output->write_string($fi->name);
-		$output->print(chr($fi->is_indexed ? 1 : 0));
-	}
+	my ($self, $file) = @_;
+	my @fi       = @{ $self->{bynumber} };
+	my $template = "w" . ("w/a*C" x @fi);
+	my $packed   = pack $template, scalar(@fi),
+		map { $_->name => ($_->is_indexed ? 1 : 0) } @fi;
+	write_file($file => $packed);
 }
 
 sub _read {
-	my ($self, $stream) = @_;
-	$self->_add_internal($stream->read_string, $stream->read_byte)
-		for 1 .. $stream->read_vint;
+	my ($self, $file) = @_;
+	my @fields = unpack "w/(w/aC)", read_file($file->[1]);
+	while (my ($field, $indexed) = splice @fields, 0, 2) {
+		$self->_add_internal($field => $indexed);
+	}
 }
 
 1;

@@ -46,14 +46,4 @@ name and is_indexed flag.
 
 =cut
 
-sub new {
-	my ($self, $args) = @_;
-	confess "That's not a string: $args->{name}"
-		if ref $args->{name}
-		or $args->{name} =~ /=HASH/;
-	confess "Indexing not defined"
-		unless defined $args->{is_indexed};
-	$self->SUPER::new($args);
-}
-
 1;

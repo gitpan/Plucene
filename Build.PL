@@ -19,8 +19,7 @@ Module::Build->new(
 		'Class::Accessor'       => '0.18',
 		'Class::Accessor::Fast' => '0.02',
 		'Class::Virtual'        => '0.03',
-		$] < 5.007001 ? ('Encode::compat' => '0.05') : (
-		'Encode'                => ''),
+		$] < 5.007001 ? ('Encode::compat' => '0.05') : ('Encode' => ''),
 		'File::Spec::Functions' => '1.1',
 		'IO::File'              => '1.08',
 		'IO::Handle'            => '1.21_00',

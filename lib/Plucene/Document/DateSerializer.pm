@@ -73,8 +73,6 @@ useful for debugging dates, and simply reverses the C<freeze_date> operation.
 =cut
 
 sub thaw_date {
-
-	# Only used for debugging.
 	my $self = shift;
 	return Time::Piece->new(_from_base_36($self) / 1000);
 }

@@ -76,13 +76,14 @@ sub doc {
 		my $fi = $self->{field_infos}->{bynumber}->[ $self->{fields}->read_vint ];
 		my $bits = $self->{fields}->read_byte;
 		$doc->add(
-			Plucene::Document::Field->new({
-					name         => $fi->name,
-					string       => $self->{fields}->read_string,
-					is_stored    => 1,
-					is_indexed   => $fi->is_indexed,
-					is_tokenized => (($bits & 1) != 0)              # No, really
-				}));
+			bless {
+				name         => $fi->name,
+				string       => $self->{fields}->read_string,
+				is_stored    => 1,
+				is_indexed   => $fi->is_indexed,
+				is_tokenized => (($bits & 1) != 0)              # No, really
+				} => 'Plucene::Document::Field'
+		);
 	}
 	return $doc;
 }
