@@ -42,7 +42,6 @@ use warnings;
 
 use Carp qw/confess/;
 use constant DEBUG => 0;
-use File::Spec::Functions qw(catfile);
 
 use Plucene::Bitvector;
 use Plucene::Index::FieldInfos;
@@ -86,18 +85,15 @@ sub new {
 
 	if ($self->has_deletions($si)) {
 		my $stream =
-			Plucene::Store::InputStream->new(
-			catfile($self->{directory}, "$segment.del"));
+			Plucene::Store::InputStream->new("$self->{directory}/$segment.del");
 		$self->deleted_docs(Plucene::Bitvector->read($stream));
 	}
 
 	$self->freq_stream(
-		Plucene::Store::InputStream->new(
-			catfile($self->{directory}, "$segment.frq")))
+		Plucene::Store::InputStream->new("$self->{directory}/$segment.frq"))
 		or die $!;
 	$self->prox_stream(
-		Plucene::Store::InputStream->new(
-			catfile($self->{directory}, "$segment.prx")))
+		Plucene::Store::InputStream->new("$self->{directory}/$segment.prx"))
 		or die $!;
 	$self->_open_norms;
 	return $self;
@@ -106,14 +102,14 @@ sub new {
 sub _do_close {
 	my $self = shift;
 	if ($self->{deleted_docs_dirty}) {
-		my $file = catfile($self->{directory}, $self->{segment});
+		my $file = "$self->{directory}/$self->{segment}";
 		do_locked {
 			my $stream = Plucene::Store::OutputStream->new($file . ".tmp");
 			$self->deleted_docs->write($stream);
 			$stream->close;
 			rename $file . ".tmp", $file . ".del";
 			}
-			catfile($self->{directory}, "commit.lock");
+			"$self->{directory}/commit.lock";
 		$self->{deleted_docs_dirty} = 0;
 	}
 }
@@ -126,8 +122,7 @@ sub _do_close {
 =cut
 
 sub has_deletions {
-	my ($class, $si) = @_;
-	return -e catfile($si->dir, $si->name . ".del");
+	-e ($_[1]->dir . "/" . $_[1]->name . ".del");
 }
 
 sub _do_delete {
@@ -147,13 +142,10 @@ sub _do_delete {
 sub files {
 	my $self    = shift;
 	my $segment = $self->{segment};
-	my @files   = map $segment . ".$_", qw( fnm fdx fdt tii tis frq prx);
-	push @files, $segment . ".del"
-		if -e catfile($self->{directory}, $segment . ".del");
+	my @files   = map "$segment.$_", qw( fnm fdx fdt tii tis frq prx);
+	push @files, "$segment.del" if -e "$self->{directory}/$segment.del";
 	my @fi = $self->field_infos->fields;
-	for (0 .. $#fi) {
-		push @files, $segment . ".f$_" if $fi[$_]->is_indexed;
-	}
+	($fi[$_]->is_indexed && push @files, "$segment.f$_") for 0 .. $#fi;
 	return @files;
 }
 
@@ -163,7 +155,7 @@ sub files {
 
 =cut
 
-sub terms { return shift->{tis}->terms(@_) }
+sub terms { shift->{tis}->terms(@_) }
 
 =head2 document
 
@@ -184,8 +176,7 @@ sub document {
 =cut
 
 sub is_deleted {
-	my ($self, $id) = @_;
-	return $self->{deleted_docs} ? $self->{deleted_docs}->get($id) : 0;
+	$_[0]->{deleted_docs} ? $_[0]->{deleted_docs}->get($_[1]) : 0;
 }
 
 =head2 term_docs
@@ -218,7 +209,7 @@ given term.
 sub term_positions {
 	my ($self, $term) = @_;
 	my $pos = Plucene::Index::SegmentTermPositions->new($self);
-	if ($term) { $pos->seek($term) }
+	$pos->seek($term) if $term;
 	return $pos;
 
 }
@@ -233,8 +224,7 @@ This returns the number of documents containing the passed term.
 
 sub doc_freq {
 	my ($self, $term) = @_;
-	my $ti = $self->{tis}->get($term);
-	return 0 if !$ti;
+	my $ti = $self->{tis}->get($term) or return 0;
 	return $ti->doc_freq;
 }
 
@@ -259,7 +249,7 @@ sub num_docs {
 
 =cut
 
-sub max_doc { return shift->fields_reader->size; }
+sub max_doc { $_[0]->fields_reader->size; }
 
 =head2 norms
 
@@ -276,15 +266,13 @@ the appropriate place in a string.
 
 sub norms {
 	my ($self, $field, $offset) = @_;
-	my $norm = $self->{norms}->{$field};
-	return unless $norm;
+	my $norm = $self->{norms}->{$field} or return;
 	return $norm->{bytes} ||= $self->_norm_read_from_stream($field);
 }
 
 sub _norm_read_from_stream {
 	my ($self, $field) = @_;
-	my $ns = $self->norm_stream($field);
-	return unless $ns;
+	my $ns = $self->norm_stream($field) or return;
 	my $output = "";
 	$output .= chr($ns->read_byte()) for 1 .. $self->max_doc;
 	$output;
@@ -301,8 +289,7 @@ This will return the Plucene::Store::InputStream for the passed field.
 
 sub norm_stream {
 	my ($self, $field) = @_;
-	my $norm = $self->{norms}->{$field};
-	return unless $norm;
+	my $norm = $self->{norms}->{$field} or return;
 
 	# Clone the norm's filehandle
 	my $clon = $norm->{in}->clone;
@@ -313,8 +300,7 @@ sub norm_stream {
 sub _open_norms {
 	my $self = shift;
 	for my $fi (grep $_->is_indexed, $self->field_infos->fields) {
-		my $file =
-			catfile($self->{directory}, $self->{segment} . ".f" . $fi->number);
+		my $file = "$self->{directory}/$self->{segment}.f" . $fi->number;
 		my $fh = Plucene::Store::InputStream->new($file) or die $file . " :" . $!;
 		warn "Opening norm stream $file for " . $fi->name if DEBUG;
 		$self->{norms}{ $fi->name } = Plucene::Index::Norm->new($fh);

@@ -36,7 +36,6 @@ use strict;
 use warnings;
 
 use Carp qw(confess cluck);
-use File::Spec::Functions qw(catfile);
 
 use Plucene::Document;
 use Plucene::Document::Field;
@@ -57,11 +56,9 @@ directory and optional filename.
 sub new {
 	my ($class, $dir, $file) = @_;
 	my $self = bless {}, $class;
-	if ($file) {
-		$self->_read(Plucene::Store::InputStream->new(catfile($dir, $file)));
-	} else {
-		$self->_add_internal("", 0);
-	}
+	$file
+		? $self->_read(Plucene::Store::InputStream->new("$dir/$file"))
+		: $self->_add_internal("", 0);
 	return $self;
 }
 
@@ -86,11 +83,12 @@ sub add {
 		$self->add($_->name, $_->is_indexed) for $obj->fields;
 		return;
 	}
-	if (ref $obj) { confess "Don't yet know how to handle a $obj" }
+	confess "Don't yet know how to handle a $obj" if ref $obj;
 	my $name = $obj;                       # For clarity. :)
 	my $fi   = $self->field_info($name);
-	if (!$fi) { $self->_add_internal($name, $indexed); }
-	else { $fi->is_indexed($indexed); }
+	$fi
+		? $fi->is_indexed($indexed)
+		: $self->_add_internal($name, $indexed);
 }
 
 sub _add_internal {
@@ -117,8 +115,8 @@ no match, then -1 is returned.
 sub field_number {
 	my ($self, $name) = @_;
 	return -1 unless defined $name;
-	my $field = $self->{byname}{$name};
-	return $field ? $field->number : -1;
+	my $field = $self->{byname}{$name} or return -1;
+	return $field->number;
 }
 
 =head2 fields
@@ -129,7 +127,7 @@ This will return all the fields.
 
 =cut
 
-sub fields { return @{ shift->{bynumber} } }
+sub fields { return @{ $_[0]->{bynumber} } }
 
 =head2 field_info
 
@@ -139,12 +137,8 @@ This will return the field info for the field called $name.
 
 =cut
 
-sub field_info {
-
-	# Please ensure nothing in the code tries passing this a number. :(
-	my ($self, $name) = @_;
-	return $self->{byname}{$name};
-}
+# Please ensure nothing in the code tries passing this a number. :(
+sub field_info { $_[0]->{byname}{ $_[1] } }
 
 =head2 field_name
 
@@ -154,10 +148,7 @@ This will return the field name for the field whose number is $number.
 
 =cut
 
-sub field_name {
-	my ($self, $number) = @_;
-	return $self->{bynumber}[$number]->name;
-}
+sub field_name { $_[0]->{bynumber}[ $_[1] ]->name }
 
 =head2 size 
 
@@ -167,7 +158,7 @@ This returns the number of field info objects.
 
 =cut
 
-sub size { return scalar shift->fields }
+sub size { scalar $_[0]->fields }
 
 =head2 write
 
@@ -191,10 +182,8 @@ sub write {
 
 sub _read {
 	my ($self, $stream) = @_;
-	cluck("read called without stream") unless $stream;
-	my $size = $stream->read_vint;
 	$self->_add_internal($stream->read_string, $stream->read_byte)
-		for 1 .. $size;
+		for 1 .. $stream->read_vint;
 }
 
 1;

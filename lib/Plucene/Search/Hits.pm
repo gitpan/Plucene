@@ -120,7 +120,7 @@ sub hit_doc {
 	if ($n >= $self->length) {
 		croak("Not a valid hit number: $n");
 	}
-	$self->get_more_docs($n) if $n >= @{ $self->{hit_docs} };
+	$self->_get_more_hits($n) if $n >= @{ $self->{hit_docs} };
 	return $self->{hit_docs}[$n];
 }
 

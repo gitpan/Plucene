@@ -35,8 +35,6 @@ use Plucene::Search::HitCollector;
 use Plucene::Search::Query;
 use Plucene::Search::TopDocs;
 
-use Class::HasA ([qw( doc_freq max_doc )] => "reader");
-
 use base 'Plucene::Search::Searcher';
 
 =head2 new
@@ -75,7 +73,14 @@ The top search results.
 
 This will return the Plucene::Document $id.
 
+=head2 doc_freq / max_doc
+
+get / set these
+
 =cut
+
+sub doc_freq { shift->reader->doc_freq(@_) }
+sub max_doc  { shift->reader->max_doc(@_) }
 
 sub reader { shift->{reader} }
 

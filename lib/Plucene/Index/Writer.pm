@@ -37,7 +37,6 @@ use warnings;
 use Carp qw/cluck croak/;
 use Fcntl qw(O_EXCL O_CREAT O_WRONLY);
 use File::Path qw(mkpath);
-use File::Spec::Functions qw(catfile);
 use List::Util qw(sum);
 use File::Temp qw(tempdir);
 
@@ -73,7 +72,7 @@ sub new {
 		mkpath($path) or croak "Couldn't create $path - $!";
 	}
 
-	my $lock = catfile($path, "write.lock");
+	my $lock = "$path/write.lock";
 
 	my $self = bless {
 		directory => $path,
@@ -93,7 +92,7 @@ sub new {
 			? $self->{segmentinfos}->write($path)
 			: $self->{segmentinfos}->read($path);
 		}
-		catfile($path, "commit.lock");
+		"$path/commit.lock";
 
 	return $self;
 }
@@ -108,7 +107,7 @@ Get / set the mergefactor. It defaults to 5.
 
 =cut
 
-sub mergefactor { shift->{mergefactor} }
+sub mergefactor { $_[0]->{mergefactor} }
 
 sub set_mergefactor {
 	$_[0]->{mergefactor} = $_[1] || $_[0]->mergefactor || 10;
@@ -116,7 +115,7 @@ sub set_mergefactor {
 
 sub DESTROY {
 	my $self = shift;
-	if ($self->{lock}) { unlink $self->{lock} }
+	unlink $self->{lock} if $self->{lock};
 	$self->_flush;
 }
 
@@ -126,10 +125,7 @@ sub DESTROY {
 
 =cut
 
-sub doc_count {
-	my $self = shift;
-	return sum map $_->doc_count(), $self->{segmentinfos}->segments;
-}
+sub doc_count { sum map $_->doc_count(), $_[0]->{segmentinfos}->segments }
 
 =head2 add_document
 
@@ -160,7 +156,7 @@ sub add_document {
 }
 
 sub _new_segname {
-	"_" . shift->{segmentinfos}->{counter}++    # Urgh
+	"_" . $_[0]->{segmentinfos}->{counter}++    # Urgh
 }
 
 sub _flush {
@@ -296,7 +292,8 @@ sub _merge_segments {
 		$self->{segmentinfos}->write($self->{directory});
 		$self->_delete_segments(@to_delete);
 		}
-		catfile($self->{directory}, "commit.lock");
+		"$self->{directory}/commit.lock";
+
 }
 
 sub _delete_segments {
@@ -304,7 +301,7 @@ sub _delete_segments {
 	my @try_later = $self->_delete($self->_read_deletable_files);
 	for my $reader (@to_delete) {
 		for my $file ($reader->files) {
-			push @try_later, $self->_delete(catfile($reader->{directory}, $file));
+			push @try_later, $self->_delete("$reader->{directory}/$file");
 		}
 	}
 	$self->_write_deletable_files(@try_later);
@@ -319,7 +316,7 @@ sub _delete {
 
 sub _read_deletable_files {
 	my $self = shift;
-	return unless -e (my $dfile = catfile($self->{directory}, "deletable"));
+	return unless -e (my $dfile = "$self->{directory}/deletable");
 	open my $fh, $dfile or die $!;
 	chomp(my @files = <$fh>);
 	return @files;
@@ -327,7 +324,7 @@ sub _read_deletable_files {
 
 sub _write_deletable_files {
 	my ($self, @files) = @_;
-	my $dfile = catfile($self->{directory}, "deletable");
+	my $dfile = "$self->{directory}/deletable";
 	open my $fh, ">" . $dfile . ".new" or die $!;
 	print $fh "$_\n" for @files;
 	close($fh);

@@ -25,7 +25,6 @@ no warnings 'uninitialized';
 
 use Carp qw(confess croak cluck carp);
 use constant DEBUG => 0;
-use File::Spec::Functions qw(catfile);
 use Tie::Array::Sorted;
 
 use Plucene::Index::FieldInfos;
@@ -50,11 +49,7 @@ This will create a new Plucene::Index::SegmentMerger object.
 	
 =cut
 
-sub new {
-	my $self = shift->SUPER::new(@_);
-	$self->readers([]);
-	return $self;
-}
+sub new { shift->SUPER::new(@_, readers => []) }
 
 =head2 add
 
@@ -62,19 +57,13 @@ sub new {
 
 =cut
 
-sub add {
-	my ($self, $reader) = @_;
-	push @{ $self->{readers} }, $reader;
-}
+sub add { push @{ $_[0]->{readers} }, $_[1] }
 
 =head2 segment_reader
 
 =cut
 
-sub segment_reader {
-	my ($self, $n) = @_;
-	$self->{readers}->[$n];
-}
+sub segment_reader { $_[0]->{readers}->[ $_[1] ] }
 
 =head2 merge
 
@@ -97,16 +86,15 @@ sub _merge_fields {
 	my $self = shift;
 	$self->{field_infos} = Plucene::Index::FieldInfos->new();
 	$self->{field_infos}->add($_->field_infos) for @{ $self->{readers} };
-	$self->{field_infos}
-		->write(catfile($self->{dir}, $self->{segment} . ".fnm"));
+	$self->{field_infos}->write("$self->{dir}/$self->{segment}.fnm");
 
 	my $fw =
 		Plucene::Index::FieldsWriter->new($self->{dir}, $self->{segment},
 		$self->{field_infos});
 	for my $reader (@{ $self->{readers} }) {
-		my @documents = map $reader->document($_), grep !$reader->is_deleted($_),
+		$fw->add_document($_)
+			foreach map $reader->document($_), grep !$reader->is_deleted($_),
 			0 .. $reader->max_doc - 1;
-		$fw->add_document($_) for @documents;
 	}
 }
 
@@ -114,9 +102,9 @@ sub _merge_terms {
 	my $self    = shift;
 	my $segment = $self->{segment};
 	$self->{freq_output} =
-		Plucene::Store::OutputStream->new(catfile($self->{dir}, "$segment.frq"));
+		Plucene::Store::OutputStream->new("$self->{dir}/$segment.frq");
 	$self->{prox_output} =
-		Plucene::Store::OutputStream->new(catfile($self->{dir}, "$segment.prx"));
+		Plucene::Store::OutputStream->new("$self->{dir}/$segment.prx");
 	$self->{term_infos_writer} =
 		Plucene::Index::TermInfosWriter->new($self->{dir}, $segment,
 		$self->{field_infos});
@@ -175,13 +163,13 @@ sub _merge_term_info {
 
 sub _merge_norms {
 	my $self   = shift;
-	my @fields = $self->field_infos->fields;
+	my @fields = $self->{field_infos}->fields;
 	for (0 .. $#fields) {
 		my $fi = $fields[$_];
 		next unless $fi->is_indexed;
 		my $output =
 			Plucene::Store::OutputStream->new(my $file =
-				catfile($self->dir, $self->{segment} . ".f" . $_));
+				"$self->{dir}/$self->{segment}.f$_");
 		print "Writing merged norm stream $file\n" if DEBUG;
 		for my $reader (@{ $self->{readers} }) {
 			my $input = $reader->norm_stream($fi->name);

@@ -22,8 +22,6 @@ This class add documents to the appropriate files.
 use strict;
 use warnings;
 
-use File::Spec::Functions qw(catfile);
-
 use Plucene::Store::OutputStream;
 use Plucene::Index::FieldInfos;
 
@@ -42,16 +40,8 @@ sub new {
 	bless {
 		field_infos   => $fn,
 		segment       => $segment,
-		fields_stream => (
-			Plucene::Store::OutputStream->new(
-				catfile($d, "$segment.fdt") || die $!
-			)
-		),
-		index_stream => (
-			Plucene::Store::OutputStream->new(
-				catfile($d, "$segment.fdx") || die $!
-			)
-		),
+		fields_stream => Plucene::Store::OutputStream->new("$d/$segment.fdt"),
+		index_stream  => Plucene::Store::OutputStream->new("$d/$segment.fdx"),
 	}, $self;
 }
 
@@ -66,7 +56,6 @@ This will add the passed Plucene::Document.
 sub add_document {
 	my ($self, $doc) = @_;
 	$self->{index_stream}->write_long($self->{fields_stream}->tell);
-	my $stored = 0;
 	my @stored = grep $_->is_stored, $doc->fields;
 	$self->{fields_stream}->write_vint(scalar @stored);
 	for my $field (@stored) {

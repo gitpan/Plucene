@@ -4,11 +4,10 @@ use ExtUtils::MakeMaker;
 WriteMakefile
   (
    NAME        => 'Plucene',
-   VERSION     => '1.14',
+   VERSION     => '1.17',
    PL_FILES    => {},
    INSTALLDIRS => 'site',
    PREREQ_PM   => {
-		 'Class::HasA' => '1.00',
 		 'IO::Scalar' => '2.104',
 		 'Memoize' => '1.01',
 		 'IO::Handle' => '1.21_00',
@@ -22,7 +21,6 @@ WriteMakefile
 		 'Test::Harness' => '2.30',
 		 'IO::File' => '1.09',
 		 'Lingua::Stem::En' => '2.12',
-		 'Test::Class' => '0.03',
 		 'Bit::Vector::Minimal' => '1.0',
 		 'Class::Accessor' => '0.18',
 		 'Carp' => '1.01',

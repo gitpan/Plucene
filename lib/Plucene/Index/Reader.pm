@@ -4,8 +4,6 @@ use strict;
 use warnings;
 
 use Carp;
-use File::stat;
-use File::Spec::Functions qw(catfile);
 use Fcntl qw(O_EXCL O_CREAT O_WRONLY);
 
 use Plucene::Index::SegmentReader;
@@ -66,13 +64,13 @@ sub open {
 
 	return Plucene::Index::SegmentReader->new($reader->info(0), 1)
 		if @segments == 1;
+	return Plucene::Index::SegmentsReader->new(
+		$directory,
+		map Plucene::Index::SegmentReader->new($reader->info($_),
+			$_ == $#segments),
+		0 .. $#segments
+	);
 
-	my @readers;
-	for (0 .. $#segments) {
-		push @readers,
-			Plucene::Index::SegmentReader->new($reader->info($_), $_ == $#segments);
-	}
-	return Plucene::Index::SegmentsReader->new($directory, @readers);
 }
 
 =head2 last_modified
@@ -81,11 +79,7 @@ sub open {
 
 =cut
 
-sub last_modified {
-	my ($class, $directory) = @_;
-	my $st = stat(catfile($directory, "segments"));
-	return $st && $st->mtime;
-}
+sub last_modified { (stat "$_[1]/segments")[9] }
 
 =head2 index_exists
 
@@ -93,10 +87,7 @@ sub last_modified {
 
 =cut
 
-sub index_exists {
-	my ($class, $directory) = @_;
-	return -e catfile($directory, "segments");
-}
+sub index_exists { -e "$_[1]/segments" }
 
 =head2 is_locked
 
@@ -104,10 +95,7 @@ sub index_exists {
 
 =cut
 
-sub is_locked {
-	my ($class, $directory) = @_;
-	return -e catfile($directory, "write.lock");
-}
+sub is_locked { -e "$_[1]/write.lock" }
 
 =head2 delete
 
@@ -119,13 +107,12 @@ sub delete {
 	my ($self, $doc) = @_;
 	local *FH;
 	if (!$self->{writelock}) {
-		$self->{writelock} = catfile($self->{directory}, "write.lock");
+		$self->{writelock} = "$self->{directory}/write.lock";
 		sysopen FH, $self->{writelock}, O_EXCL | O_CREAT | O_WRONLY
 			or croak "Couldn't get lock";
 	}
 	$self->_do_delete($doc);
-	my $lockfile = $self->{directory} . "/write.lock";
-	unlink $lockfile;
+	unlink "$self->{directory}/write.lock";
 }
 
 =head2 delete_term
@@ -139,7 +126,7 @@ This will delete all the documents which contain the passed term.
 sub delete_term {
 	my ($self, $term) = @_;
 	my $enum = $self->term_docs($term);
-	do { $self->delete($enum->doc) } until (!$enum->next);
+	do { $self->delete($enum->doc) } until !$enum->next;
 }
 
 =head2 close
@@ -162,8 +149,8 @@ sub close {
 
 sub unlock {
 	my ($self, $directory) = @_;
-	unlink catfile($directory, "write.lock");
-	unlink catfile($directory, "commit.lock");
+	unlink "$_[1]/write.lock";
+	unlink "$_[1]/commit.lock";
 }
 
 =head2 num_docs / max_doc / document / is_deleted / norms / terms / 

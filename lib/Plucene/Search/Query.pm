@@ -37,8 +37,6 @@ the matched documents ('boost' factor).
 use strict;
 use warnings;
 
-use Carp::Assert;
-
 use base qw/Class::Accessor::Fast/;
 __PACKAGE__->mk_accessors(qw/boost/);
 
@@ -61,13 +59,13 @@ sub new {
 
 =head2 scorer
 
-	my $scorer = $s_query->scorer($query, $searcher, $reader);
+	my $scorer = $s_query->scorer
+		(Plucene::Search::Query $query, $searcher, $reader);
 
 =cut
 
 sub scorer {
 	my ($class, $query, $searcher, $reader) = @_;
-	assert($query->isa("Plucene::Search::Query"));
 
 	$query->prepare($reader);
 	my $sum = $query->sum_squared_weights($searcher) || 1;

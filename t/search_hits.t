@@ -17,7 +17,7 @@ use Plucene::Document;
 use Plucene::Document::Field;
 use Plucene::Index::Writer;
 
-use Test::More tests => 3;
+use Test::More tests => 4;
 use File::Path;
 use File::Temp qw/tempdir/;
 
@@ -76,6 +76,11 @@ my $p = Plucene::QueryParser->new({
 my $query = $p->parse("name:perl");
 
 isa_ok my $hits = $plucy->search($query) => 'Plucene::Search::Hits';
+
+{    # get_more_docs doesn't exist
+	eval { $hits->get_more_docs };
+	like $@, qr/object method/, "No such call as get_more_docs";
+}
 
 {    # try an invalid hit doc
 	eval { $hits->hit_doc($hits->length + 10) };

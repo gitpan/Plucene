@@ -132,13 +132,15 @@ sub collect_hits {
 	my $required   = $scorer->required_mask;
 	my $prohibited = $scorer->prohibited_mask;
 	my @coord      = @{ $scorer->coord_factors };
-	for my $bucket (@{ $self->{buckets} || [] }) {
-		next unless exists $bucket->{doc};
-		$results->collect($bucket->{doc},
-			$bucket->{score} * $coord[ $bucket->{coord} ])
-			if !($bucket->{bits} & $prohibited)
-			and ($bucket->{bits} & $required) == $required;
+
+	for (my $bucket = $self->{first} ; $bucket ; $bucket = $bucket->{next}) {
+		if (  ($bucket->{bits} & $prohibited) == 0
+			and ($bucket->{bits} & $required) == $required) {
+			$results->collect($bucket->{doc},
+				$bucket->{score} * $coord[ $bucket->{coord} ]);
+		}
 	}
+	undef $self->{first};
 }
 
 sub new_collector {
@@ -156,17 +158,19 @@ __PACKAGE__->mk_accessors(qw(bucket_table mask));
 
 sub collect {
 	my ($self, $doc, $score) = @_;
-	my $table  = $self->bucket_table;
+	my $table  = $self->{bucket_table};
 	my $i      = $doc & $Plucene::Search::BucketTable::MASK;
 	my $bucket = $table->buckets->[$i];
 	$table->buckets->[$i] = $bucket = {} unless $bucket;
 
 	if (not defined $bucket->{doc} or $bucket->{doc} != $doc) {
 		@{$bucket}{qw(doc    score  bits         coord)} =
-			($doc, $score, $self->mask, 1);
+			($doc, $score, $self->{mask}, 1);
+		$bucket->{next} = $table->first;
+		$table->first($bucket);
 	} else {
 		$bucket->{score} += $score;
-		$bucket->{bits} |= $self->mask;
+		$bucket->{bits} |= $self->{mask};
 		$bucket->{coord}++;
 	}
 }

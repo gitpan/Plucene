@@ -27,12 +27,8 @@ use Plucene::Search::BooleanQuery;
 use Plucene::Search::TermQuery;
 
 __PACKAGE__->mk_accessors(qw/ prefix reader /);
-use Class::HasA ([qw/sum_squared_weights normalize _scorer/] => "_query");
 
-sub prepare {
-	my ($self, $reader) = @_;
-	$self->reader($reader);
-}
+sub prepare { $_[0]->reader($_[1]) }
 
 # This returns the underlying boolean query.
 
@@ -62,6 +58,14 @@ sub _query {
 
 Convert the query to a readable string format
 
+=head2 sum_squared_weights
+
+The sum sqaured weights of the query.
+
+=head2 normalize
+
+Normalize the query.
+
 =cut
 
 sub to_string {
@@ -72,5 +76,9 @@ sub to_string {
 	$s .= "^" . $self->boost unless $self->boost == 1;
 	$s;
 }
+
+sub sum_squared_weights { shift->_query->sum_squared_weights(@_) }
+sub normalize           { shift->_query->normalize(@_) }
+sub _scorer             { shift->_query->_scorer(@_) }
 
 1;

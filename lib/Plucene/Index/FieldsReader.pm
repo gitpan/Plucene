@@ -24,8 +24,6 @@ This class gives access to documents within the index.
 use strict;
 use warnings;
 
-use File::Spec::Functions qw(catfile);
-
 use Plucene::Document;
 use Plucene::Document::Field;
 use Plucene::Store::InputStream;
@@ -44,10 +42,9 @@ sub new {
 	my ($class, $dir, $seg, $fn) = @_;
 	bless {
 		field_infos => $fn,
-		fields => Plucene::Store::InputStream->new(catfile($dir, "$seg.fdt")),
-		index => Plucene::Store::InputStream->new(catfile($dir, "$seg.fdx")),
-		size  => ((-s catfile($dir,                             "$seg.fdx")) / 8)
-	}, $class;
+		fields      => Plucene::Store::InputStream->new("$dir/$seg.fdt"),
+		index       => Plucene::Store::InputStream->new("$dir/$seg.fdx"),
+		size        => ((-s "$dir/$seg.fdx") / 8) }, $class;
 }
 
 =head2 size
@@ -58,7 +55,7 @@ This returns the size.
 
 =cut
 
-sub size { shift->{size} }
+sub size { $_[0]->{size} }
 
 =head2 doc
 
@@ -74,12 +71,10 @@ sub doc {
 	$self->{index}->seek($n * 8, 0);
 	my $pos = $self->{index}->read_long;
 	$self->{fields}->seek($pos, 0);
-	my $doc    = Plucene::Document->new();
-	my $fields = $self->{fields}->read_vint;
-	for (1 .. $fields) {
-		my $number = $self->{fields}->read_vint;
-		my $fi     = $self->{field_infos}->{bynumber}->[$number];
-		my $bits   = $self->{fields}->read_byte;
+	my $doc = Plucene::Document->new();
+	for (1 .. $self->{fields}->read_vint) {
+		my $fi = $self->{field_infos}->{bynumber}->[ $self->{fields}->read_vint ];
+		my $bits = $self->{fields}->read_byte;
 		$doc->add(
 			Plucene::Document::Field->new({
 					name         => $fi->name,

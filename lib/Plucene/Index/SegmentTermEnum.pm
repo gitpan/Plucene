@@ -6,7 +6,7 @@ Plucene::Index::SegmentTermEnum - Segment term enum
 
 =head1 SYNOPSIS
 
-	my $seg_term_enum = Plucene::Index::SegmentTermsEnum
+	my $seg_term_enum = Plucene::Index::SegmentTermEnum
 	 	->new(  Plucene::Store::InputStream $i, 
 			Plucene::Index::FieldInfos  $fi, 
 			$is_index);
@@ -36,24 +36,27 @@ use Plucene::Index::FieldInfos;
 use Plucene::Index::TermInfo;
 use Plucene::Index::Term;
 
-use Class::HasA ([qw(doc_freq freq_pointer prox_pointer)] => "term_info");
-
 use base 'Class::Accessor::Fast';
 
 __PACKAGE__->mk_accessors(qw(term term_info index_pointer size position));
 
 =head2 new
 
-	my $seg_term_enum = Plucene::Index::SegmentTermsEnum
+	my $seg_term_enum = Plucene::Index::SegmentTermEnum
 	 	->new(  Plucene::Store::InputStream $i, 
 			Plucene::Index::FieldInfos  $fi, 
 			$is_index);
 
-=head2 term / term_info / index_pointer / size / position
+=head2 term / term_info / index_pointer / size / position 
+	/ doc_freq / freq_pointer / prox_pointer
 
 Get / set these attributes.
 			
 =cut
+
+sub doc_freq     { shift->term_info->doc_freq(@_) }
+sub freq_pointer { shift->term_info->freq_pointer(@_) }
+sub prox_pointer { shift->term_info->prox_pointer(@_) }
 
 # term_info must return a clone
 
@@ -119,7 +122,7 @@ sub next {
 	}
 	$self->{prev} = $self->{term};
 	$self->{term} = $self->read_term();
-	$self->doc_freq($self->{input}->read_vint);
+	$self->{term_info}->doc_freq($self->{input}->read_vint);
 	$self->{term_info}->{freq_pointer} += $self->{input}->read_vlong;
 	$self->{term_info}->{prox_pointer} += $self->{input}->read_vlong;
 

@@ -18,7 +18,6 @@ Module::Build->new(
 		'Carp'                  => '1.01',
 		'Class::Accessor'       => '0.18',
 		'Class::Accessor::Fast' => '0.02',
-		'Class::HasA'           => '1.00',
 		'Class::Virtual'        => '0.03',
 		$] < 5.007001 ? ('Encode::compat' => '0.05') : (),
 		'Encode'                => '',
@@ -34,7 +33,6 @@ Module::Build->new(
 	},
 	build_requires => {
 		'File::Slurp'   => '2002.1031',
-		'Test::Class'   => '0.03',
 		'Test::Harness' => '2.30',
 	},
 )->create_build_script;

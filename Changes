@@ -1,3 +1,15 @@
+1.17 - Tue 27 Apr 2004
+	* Plucene::Search::Hits::hit_doc should call _get_more_hits not get_more_docs
+		(thanks to Kjetil Fikkan for pointing it out)
+
+1.16 - Mon 12 Apr 2004
+	* not released
+
+1.15 - Mon 29 Mar 2004
+	* Remove some needless prereqs.
+	* Removal of Class::HasA completely
+	* Remove use of 'catfile'
+
 1.14 - thu Mar 25 2004
 	* Put Encode::compat in a BEGIN block in the Store classes.
 	* Change the Build.PL to need Encode::compat if < 5.6
