@@ -4,7 +4,7 @@ use ExtUtils::MakeMaker;
 WriteMakefile
   (
    NAME        => 'Plucene',
-   VERSION     => '1.07',
+   VERSION     => '1.08',
    PL_FILES    => {},
    INSTALLDIRS => 'site',
    PREREQ_PM   => {

@@ -39,7 +39,7 @@ sub new {
 	$mode ||= "r";
 	my $abs = canonpath($filename);
 	my $fh = IO::File->new($abs, $mode) or die "$self, $mode: $filename $!";
-	bless { fh => $fh, path => $abs, mode => $mode }, $self;
+	bless [ $fh, $abs, $mode ], $self;
 }
 
 =head2 fh
@@ -48,7 +48,7 @@ The filehandle
 
 =cut
 
-sub fh { $_[0]->{fh} }
+sub fh { $_[0]->[0] }
 
 =head2 clone
 
@@ -58,8 +58,8 @@ This will return a clone of this stream.
 
 sub clone {
 	my $orig = shift;
-	my $clone = $orig->new($orig->{path}, $orig->{mode});
-	$clone->seek($orig->tell, 0);
+	my $clone = $orig->new(@{$orig}[ 1, 2 ]);
+	$clone->[0]->seek($orig->[0]->tell, 0);
 	return $clone;
 }
 
@@ -69,11 +69,7 @@ This will read and return a single byte.
 
 =cut
 
-sub read_byte {
-	my $self = shift;
-	confess("Unexpectedly hit EOF") if $self->eof;
-	ord $self->getc;
-}
+sub read_byte { ord $_[0]->[0]->getc }
 
 =head2 read_int
 
@@ -84,7 +80,7 @@ This will read four bytes and return an integer.
 sub read_int {
 	my $self = shift;
 	my $buf  = "\0" x 4;
-	$self->read($buf, 4);
+	$self->[0]->read($buf, 4);
 	return unpack("N", $buf);
 }
 
@@ -123,7 +119,7 @@ sub read_string {
 	my $self   = shift;
 	my $length = $self->read_vint();
 	my $utf8;
-	$self->read($utf8, $length);
+	$self->[0]->read($utf8, $length);
 	_utf8_on($utf8);
 	return $utf8;
 }

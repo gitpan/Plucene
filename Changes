@@ -1,3 +1,6 @@
+1.08 - Wed Mar 17 2004
+	* Some speed ups in InputStream (thanks to Marty Pauley)
+
 1.07 - Web Feb 18 2004
 	* Allowed the changing of mergefactor
 
