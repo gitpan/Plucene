@@ -1,4 +1,7 @@
-1.12 - TueMar 23 2004
+1.13 - Thu Mar 25 2004
+	* Add Encode::compat to the prereqs
+
+1.12 - Tue Mar 23 2004
 	* Put back Encode::compat
 
 1.11 - Tue Mar 23 2004

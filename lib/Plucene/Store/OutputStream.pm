@@ -22,7 +22,6 @@ use strict;
 use warnings;
 no warnings 'uninitialized';
 
-use Encode::compat;
 use Encode qw(encode);
 
 =head2 new
