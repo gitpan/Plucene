@@ -13,6 +13,8 @@ Plucene::Search::IndexSearcher - The index searcher
 
 	my Plucene::Index::Reader $reader = $searcher->reader;
 	my         Plucene::Document $doc = $reader->doc($id);
+
+	$searcher->close;
 	
 =head1 DESCRIPTION
 
@@ -140,5 +142,13 @@ sub _search_hc {
 	return unless $scorer;
 	$scorer->score($collector, $self->{reader}->max_doc);
 }
+
+=head2 close
+
+This will close the reader(s) associated with the searcher.
+
+=cut
+
+sub close { shift->{reader}->close }
 
 1;

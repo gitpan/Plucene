@@ -20,12 +20,19 @@ use strict;
 use warnings;
 
 use Carp qw(confess);
+
+#use Encode::compat;
+use Encode qw(_utf8_on);    # Magic
 use File::Spec::Functions;
 use Cwd;
 use IO::File;
 use Class::HasA ([qw/ read seek tell getc print eof close /] => "fh");
 
 =head2 new
+
+	my $inputstream = Plucene::Store::InputStream->new($file);
+
+Create a new input stream.
 
 =cut
 
@@ -122,7 +129,6 @@ sub read_string {
 	my $length = $self->read_vint();
 	my $utf8;
 	$self->read($utf8, $length);
-	use Encode qw(_utf8_on);    # Magic
 	_utf8_on($utf8);
 	return $utf8;
 }

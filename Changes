@@ -1,3 +1,9 @@
+1.03 - Thu Feb 05 2004
+
+	* Added in use of Enocde::compat to ensure works with < 5.7
+		(thanks to Simon Cozens)
+	* Added Plucene::Index::IndexSearcher::close()
+
 1.02 - Wed Feb 04 2004
 
 	* Speed up sort (thanks to Tony Bowden)

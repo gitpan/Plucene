@@ -116,4 +116,5 @@ t/testbitvector.t
 t/testindexwriter.t
 t/tokenfilter.t
 t/tokenizer.t
+t/utf8.t
 t/words.txt

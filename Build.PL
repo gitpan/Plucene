@@ -20,7 +20,7 @@ Module::Build->new(
 		'Class::Accessor::Fast' => '0.02',
 		'Class::HasA'           => '1.00',
 		'Class::Virtual'        => '0.03',
-		'Encode'                => '1.98',
+		'Encode::compat'        => '0.04',
 		'File::Spec::Functions' => '1.2',
 		'IO::File'              => '1.09',
 		'IO::Handle'            => '1.21_00',

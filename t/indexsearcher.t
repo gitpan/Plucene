@@ -17,7 +17,7 @@ use Plucene::Document::Field;
 use Plucene::Index::Writer;
 use Plucene::QueryParser;
 
-use Test::More tests => 2;
+use Test::More tests => 3;
 use File::Path;
 
 use constant DIRECTORY => "/tmp/testindex/$$";
@@ -74,12 +74,14 @@ index_documents_Perl();
 }
 
 {
-	my $plucy  = Plucene::Search::IndexSearcher->new(DIRECTORY);
-	my $parser = Plucene::QueryParser->new({
+	my $searcher = Plucene::Search::IndexSearcher->new(DIRECTORY);
+	my $parser   = Plucene::QueryParser->new({
 			analyzer => Plucene::Analysis::SimpleAnalyzer->new(),
 			default  => "text"
 		});
 
 	my $query = $parser->parse("name:spongebob");
-	isa_ok my $hits = $plucy->search($query) => 'Plucene::Search::Hits';
+	isa_ok my $hits = $searcher->search($query) => 'Plucene::Search::Hits';
+	eval { $searcher->close };
+	ok !$@, "close";
 }
