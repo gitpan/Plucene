@@ -24,7 +24,7 @@ use warnings;
 
 use Plucene::Index::SegmentTermPositions;
 
-use base 'Class::Accessor';
+use base 'Class::Accessor::Fast';
 
 __PACKAGE__->mk_accessors(qw( base reader term_enum term postings doc_map));
 

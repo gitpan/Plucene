@@ -40,7 +40,7 @@ use List::Util qw(sum);
 use Carp qw(cluck);
 use Tie::Array::Sorted;
 
-use base qw(Plucene::Index::Reader Class::Accessor);
+use base qw(Plucene::Index::Reader Class::Accessor::Fast);
 
 __PACKAGE__->mk_accessors(qw(max_doc));
 
@@ -231,7 +231,7 @@ package Plucene::Index::SegmentsTermEnum;
 
 # Wondered why I hadn't seen that before
 
-use base 'Class::Accessor';
+use base 'Class::Accessor::Fast';
 __PACKAGE__->mk_accessors(qw(doc_freq term));
 
 sub new {

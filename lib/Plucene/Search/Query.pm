@@ -39,7 +39,7 @@ use warnings;
 
 use Carp::Assert;
 
-use base qw/Class::Accessor/;
+use base qw/Class::Accessor::Fast/;
 __PACKAGE__->mk_accessors(qw/boost/);
 
 =head2 new

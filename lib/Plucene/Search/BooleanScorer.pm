@@ -26,7 +26,7 @@ use List::Util qw(min);
 
 use Plucene::Search::Similarity;
 
-use base qw(Plucene::Search::Scorer Class::Accessor);
+use base qw(Plucene::Search::Scorer Class::Accessor::Fast);
 
 __PACKAGE__->mk_accessors(
 	qw(next_mask required_mask prohibited_mask max_coord scorers bucket_table
@@ -117,7 +117,7 @@ package Plucene::Search::BucketTable;
 our $SIZE = 1 << 10;
 our $MASK = $SIZE - 1;
 
-use base 'Class::Accessor';
+use base 'Class::Accessor::Fast';
 __PACKAGE__->mk_accessors(qw(buckets first scorer));
 
 sub new {
@@ -150,7 +150,7 @@ sub new_collector {
 }
 
 package Plucene::Search::BucketCollector;
-use base (qw(Class::Accessor Plucene::Search::HitCollector));
+use base (qw(Class::Accessor::Fast Plucene::Search::HitCollector));
 
 __PACKAGE__->mk_accessors(qw(bucket_table mask));
 

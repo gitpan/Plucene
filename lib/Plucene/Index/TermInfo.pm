@@ -25,7 +25,7 @@ use warnings;
 
 use Carp;
 
-use base 'Class::Accessor';
+use base 'Class::Accessor::Fast';
 
 =head2 doc_freq / freq_pointer / prox_pointer
 

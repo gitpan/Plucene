@@ -25,7 +25,7 @@ use constant SCORE_CACHE_SIZE => 32;
 
 use Plucene::Search::Similarity;
 
-use base qw(Plucene::Search::Scorer Class::Accessor);
+use base qw(Plucene::Search::Scorer Class::Accessor::Fast);
 
 =head2 term_docs / norms / weight / doc / docs / freqs / pointer / 
 	pointer_max / score_cache

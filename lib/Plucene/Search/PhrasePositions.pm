@@ -21,7 +21,7 @@ Plucene::Search::PhrasePositions - The position of a phrase
 use strict;
 use warnings;
 
-use base 'Class::Accessor';
+use base 'Class::Accessor::Fast';
 
 __PACKAGE__->mk_accessors(qw/ doc position count offset tp next_in_list /);
 

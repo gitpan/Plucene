@@ -35,7 +35,7 @@ use Plucene::Index::TermInfosWriter;
 use Plucene::Index::TermInfo;
 use Plucene::Store::OutputStream;
 
-use base 'Class::Accessor';
+use base 'Class::Accessor::Fast';
 
 __PACKAGE__->mk_accessors(
 	qw( dir name readers field_infos

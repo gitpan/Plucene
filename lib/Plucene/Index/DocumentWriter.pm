@@ -72,8 +72,13 @@ sub add_document {
 	$self->{postings}      = {};
 	$self->{field_lengths} = [];
 	$self->_invert_document($doc);
-	my @postings =
-		sort { $a->term->_cmp($b->term) } values %{ $self->{postings} };
+	my @postings = sort {
+
+		#  $a->term->_cmp($b->term)
+		$a->{term}->{field} cmp $b->{term}->{field}
+			|| $a->{term}->{text} cmp $b->{term}->{text}
+	} values %{ $self->{postings} };
+
 	$self->_write_postings($segment, @postings);
 	$self->_write_norms($doc, $segment);
 }
@@ -169,7 +174,7 @@ sub _write_norms {
 
 package Plucene::Index::Posting;
 
-use base 'Class::Accessor';
+use base 'Class::Accessor::Fast';
 
 __PACKAGE__->mk_accessors(qw( term freq positions ));
 

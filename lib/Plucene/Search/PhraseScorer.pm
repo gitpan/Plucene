@@ -25,7 +25,7 @@ use Tie::Array::Sorted;
 
 use Plucene::Search::PhrasePositions;
 
-use base qw(Plucene::Search::Scorer Class::Accessor);
+use base qw(Plucene::Search::Scorer Class::Accessor::Fast);
 
 sub _phrase_freq { die "Abstract method" }
 

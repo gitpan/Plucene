@@ -6,6 +6,10 @@ use Test::More;
 use List::Util qw(sum);
 use IO::Scalar;
 
+use Plucene::Analysis::Standard::StandardAnalyzer;
+
+use Test::More tests => 19;
+
 my %tests = (
 	SimpleAnalyzer => [
 		[ "foo bar FOO BAR"            => [ "foo", "bar", "foo", "bar" ] ],
@@ -37,8 +41,6 @@ my %tests = (
 		[ "foo a bar such FOO THESE BAR" => [ "foo", "bar", "foo", "bar" ] ],
 	]);
 
-Test::More->import(tests => sum map { scalar @$_ } values %tests);
-
 for my $analyzer (keys %tests) {
 	my $class = "Plucene::Analysis::$analyzer";
 	eval "require $class";
@@ -52,4 +54,9 @@ for my $analyzer (keys %tests) {
 		push @data, $_->text while $_ = $stream->next;
 		is_deeply(\@data, $output, "$class analyzed $input");
 	}
+}
+
+{    # StandardAnalyzer is a subclass of Analyzer
+	isa_ok +Plucene::Analysis::Standard::StandardAnalyzer->new =>
+		'Plucene::Analysis::Analyzer';
 }

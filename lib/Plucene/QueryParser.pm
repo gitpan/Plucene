@@ -3,7 +3,7 @@ package Plucene::QueryParser;
 use strict;
 use warnings;
 
-use base 'Class::Accessor';
+use base 'Class::Accessor::Fast';
 
 use Carp 'croak';
 use IO::Scalar;

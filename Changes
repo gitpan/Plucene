@@ -1,3 +1,11 @@
+1.02 - Wed Feb 04 2004
+
+	* Speed up sort (thanks to Tony Bowden)
+	* Move from Class::Accessor to Class::Accessor::Fast (thank to Tony again)
+	* StandardAnalyzer should be a subclass of Analyzer!
+	* StandardTokenizer now tokenizes correctly
+	* IndexSearcher should call TopDocs with a hashref and named keys if no scorer.
+
 1.01 - Tue Feb 03 2004
 
 	* Doc fixes to Plucene.pm, bin/dump_index and README

@@ -34,7 +34,7 @@ use strict;
 use warnings;
 no warnings 'uninitialized';
 
-use base 'Class::Accessor';
+use base 'Class::Accessor::Fast';
 use Carp qw/croak/;
 
 __PACKAGE__->mk_accessors(qw(field text));

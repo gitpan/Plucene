@@ -52,6 +52,7 @@ sub token_re {
 }
 
 sub normalize {
+	my $class = shift;
 
 	# These are in the StandardFilter in Java, but Perl is not Java.
 	# Thankfully.

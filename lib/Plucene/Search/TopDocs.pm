@@ -24,7 +24,7 @@ The total number of hits for the query.
 use strict;
 use warnings;
 
-use base 'Class::Accessor';
+use base 'Class::Accessor::Fast';
 
 __PACKAGE__->mk_accessors(qw/ total_hits score_docs /);
 

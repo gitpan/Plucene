@@ -54,7 +54,7 @@ use Plucene::Utils;
 use Plucene::Store::InputStream;
 use Plucene::Store::OutputStream;
 
-use base qw(Plucene::Index::Reader Class::Accessor);
+use base qw(Plucene::Index::Reader Class::Accessor::Fast);
 
 __PACKAGE__->mk_accessors(
 	qw(field_infos fields_reader deleted_docs freq_stream prox_stream directory)

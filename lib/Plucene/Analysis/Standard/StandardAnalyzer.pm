@@ -28,6 +28,8 @@ This list of stop words are:
 use strict;
 use warnings;
 
+use base 'Plucene::Analysis::Analyzer';
+
 use Plucene::Analysis::Standard::StandardTokenizer;
 use Plucene::Analysis::StopFilter;
 
@@ -48,10 +50,10 @@ my @stopwords = (
 
 sub tokenstream {
 	my $class = shift;
-	return Plucene::Analysis::StopFilter->new(
-		input    => Plucene::Analysis::Standard::StandardTokenizer(@_),
-		stoplist => \@stopwords
-	);
+	return Plucene::Analysis::StopFilter->new({
+			input    => Plucene::Analysis::Standard::StandardTokenizer->new(@_),
+			stoplist => \@stopwords
+		});
 }
 
 1;

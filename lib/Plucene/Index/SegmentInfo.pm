@@ -33,7 +33,7 @@ compact the database and reduce the number of segments by optimizing it.
 use strict;
 use warnings;
 
-use base qw(Class::Accessor);
+use base qw(Class::Accessor::Fast);
 
 =head2 name / doc_count / dir
 

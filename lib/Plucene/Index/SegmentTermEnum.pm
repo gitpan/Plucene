@@ -38,7 +38,7 @@ use Plucene::Index::Term;
 
 use Class::HasA ([qw(doc_freq freq_pointer prox_pointer)] => "term_info");
 
-use base 'Class::Accessor';
+use base 'Class::Accessor::Fast';
 
 __PACKAGE__->mk_accessors(qw(term term_info index_pointer size position));
 

@@ -30,7 +30,7 @@ use Carp qw/confess/;
 
 use Plucene::Bitvector;
 
-use base 'Class::Accessor';
+use base 'Class::Accessor::Fast';
 
 __PACKAGE__->mk_accessors(
 	qw(parent freq_stream freq_count deleted_docs doc freq));

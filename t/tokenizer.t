@@ -17,8 +17,9 @@ use Plucene::Document::Field;
 use Plucene::Index::Writer;
 use Plucene::Analysis::LowerCaseTokenizer;
 use Plucene::Analysis::CharTokenizer;
+use Plucene::Analysis::Standard::StandardTokenizer;
 
-use Test::More tests => 9;
+use Test::More tests => 13;
 use File::Path;
 
 use constant DIRECTORY => "/tmp/testindex/$$";
@@ -99,4 +100,15 @@ my $reader = Plucene::Index::SegmentReader->new($si[0]);
 	my $norm = $tokenizer->normalize('SHOUT');
 	is $norm => 'SHOUT', "string normalized correctly (character tokenizer)";
 	ok $tokenizer->close, "closed character tokenizer";
+}
+
+{    # normalize with standard tokenizer
+	isa_ok my $tokenizer =
+		Plucene::Analysis::Standard::StandardTokenizer->new(
+		{ reader => $reader }) => 'Plucene::Analysis::Tokenizer';
+	isa_ok $tokenizer => 'Plucene::Analysis::Standard::StandardTokenizer';
+	my $norm = $tokenizer->normalize('SHOUT');
+	is $norm => 'SHOUT', "string normalized correctly (standard tokenizer)";
+	ok $tokenizer->close, "closed standard tokenizer";
+
 }

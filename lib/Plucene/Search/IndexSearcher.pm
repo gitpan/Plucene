@@ -82,7 +82,8 @@ sub doc { shift->reader->document(@_); }
 sub search_top {
 	my ($self, $query, $filter, $n_docs) = @_;
 	my $scorer = Plucene::Search::Query->scorer($query, $self, $self->{reader});
-	return Plucene::Search::TopDocs->new(0, []) unless $scorer;
+	return Plucene::Search::TopDocs->new({ total_hits => 0, score_docs => [] })
+		unless $scorer;
 	my $bits = $filter && $filter->bits($self->{reader});
 
 	# This is the hitqueue class, essentially

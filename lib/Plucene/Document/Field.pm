@@ -24,7 +24,7 @@ fields can be stored, indexed or tokenised.
 use strict;
 use warnings;
 
-use base qw(Class::Accessor);
+use base qw(Class::Accessor::Fast);
 
 __PACKAGE__->mk_accessors(
 	qw(name string is_stored is_indexed is_tokenized reader));

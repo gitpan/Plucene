@@ -27,7 +27,7 @@ use Carp qw/croak/;
 
 use Plucene::Search::TopDocs;
 
-use base 'Class::Accessor';
+use base 'Class::Accessor::Fast';
 __PACKAGE__->mk_accessors(
 	qw/ query searcher filter length hit_docs
 		first last num_docs max_docs /
@@ -126,7 +126,7 @@ sub hit_doc {
 
 package Plucene::Search::HitDoc;
 
-use base 'Class::Accessor';
+use base 'Class::Accessor::Fast';
 
 __PACKAGE__->mk_accessors(qw/score id doc/);
 

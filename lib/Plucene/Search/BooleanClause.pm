@@ -15,7 +15,7 @@ A clause in a boolean query.
 use strict;
 use warnings;
 
-use base 'Class::Accessor';
+use base 'Class::Accessor::Fast';
 
 =head2 query / required / prohibited
 

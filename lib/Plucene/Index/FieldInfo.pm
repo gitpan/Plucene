@@ -24,7 +24,7 @@ use warnings;
 
 use Carp qw(confess);
 
-use base 'Class::Accessor';
+use base 'Class::Accessor::Fast';
 
 =head2 name / is_indexed / number
 
