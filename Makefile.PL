@@ -1,7 +1,7 @@
     use ExtUtils::MakeMaker;
     WriteMakefile
       ('DISTNAME' => 'Plucene',
-       'VERSION' => '1.19',
+       'VERSION' => '1.20',
        'PL_FILES' => {},
        'PREREQ_PM' => {
 			'Memoize' => '1.01',
