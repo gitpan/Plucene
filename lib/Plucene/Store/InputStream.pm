@@ -69,7 +69,11 @@ This will read and return a single byte.
 
 =cut
 
-sub read_byte { ord shift->getc }
+sub read_byte {
+	my $self = shift;
+	confess("Unexpectedly hit EOF") if $self->eof;
+	ord $self->getc;
+}
 
 =head2 read_int
 

@@ -1,3 +1,8 @@
+1.05 - Fri Feb 13 2004
+	* Remove commented out line in Plucene::Store::InputStream
+	* Removed hardcoded /tmp index directories, moved to File::Temp
+	* Removed system() calls from tests
+
 1.04 - Fri Feb 06 2004
 	* Doc change to clarify what optimize() does to a writer
 	* Removed tell call from Plucene::Store::InputStream::read_byte

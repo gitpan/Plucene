@@ -26,11 +26,11 @@ use Plucene::Index::Term;
 
 use Test::More tests => 11;
 use File::Path;
+use File::Temp qw/tempdir/;
 
-use constant DIRECTORY => "/tmp/testindex/$$";
+use constant DIRECTORY => tempdir();
 
-BEGIN { mkpath DIRECTORY }
-END   { rmtree DIRECTORY }
+END { rmtree DIRECTORY }
 
 #------------------------------------------------------------------------------
 # Helper stuff
@@ -68,7 +68,6 @@ sub index_documents_Perl {
 	$writer->optimize();    # THIS IS NOT AN OPTIONAL STEP
 }
 
-system("chmod", "g+s", DIRECTORY);
 index_documents_Perl();
 
 #------------------------------------------------------------------------------

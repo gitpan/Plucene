@@ -4,11 +4,11 @@ use strict;
 use warnings;
 
 use File::Path;
+use File::Temp qw/tempdir/;
 
-use constant DIRECTORY => '/tmp/teststore';
+use constant DIRECTORY => tempdir();
 
-BEGIN { mkdir DIRECTORY }
-END   { rmtree DIRECTORY }
+END { rmtree DIRECTORY }
 
 use File::Slurp;
 
