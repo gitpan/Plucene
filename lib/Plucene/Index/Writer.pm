@@ -15,6 +15,9 @@ Plucene::Index::Writer - write an index.
 	
 	my $doc_count = $writer->doc_count;
 
+	my $mergefactor = $writer->mergefactor;
+
+	$writer->set_mergefactor($value);
 
 =head1 DESCRIPTION
 
@@ -47,7 +50,6 @@ use Plucene::Utils;
 
 use constant MAX_FIELD_LENGTH => 10_000;
 
-our $mergefactor    = 10;
 our $max_merge_docs = ~0;
 our $DEBUG          = 0;
 
@@ -79,6 +81,7 @@ sub new {
 		lock      => $lock,       # There are many like it, but this one is mine
 		segmentinfos  => new Plucene::Index::SegmentInfos(),
 		tmp_directory => tempdir(CLEANUP => 1),
+		mergefactor   => 10,
 	}, $class;
 
 	local *FH;
@@ -93,6 +96,22 @@ sub new {
 		catfile($path, "commit.lock");
 
 	return $self;
+}
+
+=head2 mergefactor / set_mergefactor
+
+	my $mergefactor = $writer->mergefactor;
+
+	$writer->set_mergefactor($value);
+
+Get / set the mergefactor. It defaults to 5.
+
+=cut
+
+sub mergefactor { shift->{mergefactor} }
+
+sub set_mergefactor {
+	$_[0]->{mergefactor} = $_[1] || $_[0]->mergefactor || 10;
 }
 
 sub DESTROY {
@@ -155,7 +174,7 @@ sub _flush {
 		$min_segment--;
 	}
 	if ( $min_segment < 0
-		or ($doc_count + $segs[$min_segment]->doc_count > $mergefactor)
+		or ($doc_count + $segs[$min_segment]->doc_count > $self->mergefactor)
 		or !($segs[-1]->dir eq $self->{tmp_directory})) {
 		$min_segment++;
 	}
@@ -187,7 +206,7 @@ sub optimize {
 				Plucene::Index::SegmentReader->has_deletions(    # but has deletions
 					$self->{segmentinfos}->info(0))))
 		) {
-		my $minseg = $segments - $mergefactor;
+		my $minseg = $segments - $self->mergefactor;
 		$self->_merge_segments($minseg < 0 ? 0 : $minseg);
 	}
 }
@@ -223,7 +242,7 @@ sub add_indexes {
 # Or even this code - SC
 sub _maybe_merge_segments {
 	my $self              = shift;
-	my $target_merge_docs = $mergefactor;
+	my $target_merge_docs = $self->mergefactor;
 	while ($target_merge_docs <= $max_merge_docs) {
 		cluck("No segments defined!") unless $self->{segmentinfos};
 		my $min_seg    = scalar $self->{segmentinfos}->segments;
@@ -236,7 +255,7 @@ sub _maybe_merge_segments {
 		last unless $merge_docs >= $target_merge_docs;
 		warn "It's time to do a merge\n" if $DEBUG;
 		$self->_merge_segments($min_seg + 1);
-		$target_merge_docs *= $mergefactor;
+		$target_merge_docs *= $self->mergefactor;
 	}
 }
 
@@ -247,8 +266,7 @@ sub _merge_segments {
 	my $min_segment = shift;
 	my $mergedname  = $self->_new_segname;
 	my $mergedcount = 0;
-	print "Merging segments\n" if $DEBUG;
-	my $merger = Plucene::Index::SegmentMerger->new({
+	my $merger      = Plucene::Index::SegmentMerger->new({
 			dir     => $self->{directory},
 			segment => $mergedname
 		});
@@ -257,7 +275,6 @@ sub _merge_segments {
 	return if $#segments < $min_segment;
 
 	for my $si (@segments[ $min_segment .. $#segments ]) {
-		print " " . $si->name . " (" . $si->doc_count . " docs)\n" if $DEBUG;
 		my $reader = Plucene::Index::SegmentReader->new($si);
 		$merger->add($reader);
 		push @to_delete, $reader
@@ -265,7 +282,6 @@ sub _merge_segments {
 			or $reader->directory eq $self->{tmp_directory};
 		$mergedcount += $si->doc_count;
 	}
-	print " into $mergedname ($mergedcount docs)\n" if $DEBUG;
 	$merger->merge;
 
 	$self->{segmentinfos}->{segments} =    # This is a bit naughty

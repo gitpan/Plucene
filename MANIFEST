@@ -101,6 +101,7 @@ t/datesearch.t
 t/dateserializer.t
 t/deletable.t
 t/indexsearcher.t
+t/mergefactor.t
 t/queryparser.t
 t/regress-01.t
 t/regress-02.t
