@@ -1,3 +1,8 @@
+1.06 - Tue Feb 17 2004
+	* Checked $] in Build.pl to decide if to use Encode::compat
+	* Added create_makefile_pl => 'traditional' to Build.PL
+	* moved from dist_name to module_name to stop warning when running Makefile.PL
+
 1.05 - Fri Feb 13 2004
 	* Remove commented out line in Plucene::Store::InputStream
 	* Removed hardcoded /tmp index directories, moved to File::Temp

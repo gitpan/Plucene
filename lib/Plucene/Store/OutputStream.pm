@@ -22,8 +22,8 @@ use strict;
 use warnings;
 no warnings 'uninitialized';
 
-use base 'Plucene::Store::InputStream';    # And why not, indeed
 use Encode qw(encode);
+use base 'Plucene::Store::InputStream';    # And why not, indeed
 use constant BYTE => 2**8 - 1;
 use constant INT  => 2**32 - 1;
 

@@ -10,17 +10,17 @@ shift(@ARGV)
 use Module::Build;
 
 Module::Build->new(
-	dist_name => 'Plucene',
-
-	dist_version_from => 'lib/Plucene.pm',
-	requires          => {
+	create_makefile_pl => 'traditional',
+	module_name        => 'Plucene',
+	dist_version_from  => 'lib/Plucene.pm',
+	requires           => {
 		'Bit::Vector::Minimal'  => '1.0',
 		'Carp'                  => '1.01',
 		'Class::Accessor'       => '0.18',
 		'Class::Accessor::Fast' => '0.02',
 		'Class::HasA'           => '1.00',
 		'Class::Virtual'        => '0.03',
-		'Encode::compat'        => '0.04',
+		$] < 5.006 ? ('Encode' => '') : (),
 		'File::Spec::Functions' => '1.2',
 		'IO::File'              => '1.09',
 		'IO::Handle'            => '1.21_00',
