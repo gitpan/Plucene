@@ -19,6 +19,8 @@ A random-access input stream.Used for all Plucene index input operations.
 use strict;
 use warnings;
 
+BEGIN { require Encode::compat if $] < 5.007001 }
+
 use Encode qw(_utf8_on);    # Magic
 
 =head2 new

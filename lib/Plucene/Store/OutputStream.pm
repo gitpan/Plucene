@@ -22,6 +22,8 @@ use strict;
 use warnings;
 no warnings 'uninitialized';
 
+BEGIN { require Encode::compat if $] < 5.007001 }
+
 use Encode qw(encode);
 
 =head2 new
