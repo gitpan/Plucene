@@ -1,3 +1,9 @@
+1.11 - Tue Mar 23 2004
+	* More speed up patches (thanks to Marty Pauley and Tony Bowden)
+
+1.10 - Thu Mar 18 2004
+	* Include the test left out for the bug in 1.08
+
 1.09 - Wed Mar 17 2004
 	* Now allows documents of id 0 to be deleted correctly! (Thanks to Steve Rushe for pointing this out)
 

@@ -35,14 +35,8 @@ use warnings;
 no warnings 'uninitialized';
 
 use base 'Class::Accessor::Fast';
-use Carp qw/croak/;
 
 __PACKAGE__->mk_accessors(qw(field text));
-
-sub _cmp {
-	croak("Missing a Term object to compare:  @_") unless $_[0] and $_[1];
-	($_[0]->field cmp $_[1]->field) || ($_[0]->text cmp $_[1]->text);
-}
 
 =head2 eq / ne / lt / gt / ge / le
 
@@ -50,11 +44,13 @@ Exactly what you would think they are.
 
 =cut
 
-sub eq { !_cmp(@_) }
-sub ne { _cmp(@_) }
-sub lt { _cmp(@_) == -1 }
-sub gt { _cmp(@_) == 1 }
-sub ge { _cmp(@_) >= 0 }
-sub le { _cmp(@_) <= 0 }
+sub _cmp { ($_[0]->field cmp $_[1]->field) || ($_[0]->text cmp $_[1]->text) }
+sub eq { $_[0]->field eq $_[1]->field && $_[0]->text eq $_[1]->text }
+sub ne { $_[0]->field ne $_[1]->field || $_[0]->text ne $_[1]->text }
+
+sub lt { ($_[0]->field cmp $_[1]->field || $_[0]->text cmp $_[1]->text) < 0 }
+sub gt { ($_[0]->field cmp $_[1]->field || $_[0]->text cmp $_[1]->text) > 0 }
+sub ge { ($_[0]->field cmp $_[1]->field || $_[0]->text cmp $_[1]->text) >= 0 }
+sub le { ($_[0]->field cmp $_[1]->field || $_[0]->text cmp $_[1]->text) <= 0 }
 
 1;

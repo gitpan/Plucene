@@ -123,7 +123,9 @@ sub next {
 	while (1) {
 		return if $self->freq_count == 0;
 		$self->_read_one();
-		last if !$self->{deleted_docs} || !$self->deleted_docs->get($self->{doc});
+		last
+			unless $self->{deleted_docs}
+			&& $self->{deleted_docs}->get($self->{doc});
 		$self->skipping_doc;
 	}
 	return 1;

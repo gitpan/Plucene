@@ -20,10 +20,6 @@ use strict;
 use warnings;
 
 use Encode qw(_utf8_on);    # Magic
-use File::Spec::Functions;
-use Cwd;
-use IO::File;
-use Class::HasA ([qw/ read seek tell getc print eof close /] => "fh");
 
 =head2 new
 
@@ -34,21 +30,29 @@ Create a new input stream.
 =cut
 
 sub new {
-	my ($self, $filename, $mode) = @_;
+	my ($self, $filename) = @_;
 	$self = ref $self || $self;
-	$mode ||= "r";
-	my $abs = canonpath($filename);
-	my $fh = IO::File->new($abs, $mode) or die "$self, $mode: $filename $!";
-	bless [ $fh, $abs, $mode ], $self;
+	open my $fh, '<', $filename
+		or die "$self cannot open $filename for reading: $!";
+	binmode $fh;
+	bless [ $fh, $filename ], $self;
 }
 
-=head2 fh
+=head2 fh / read / seek / tell / getc / print / eof / close
 
-The filehandle
+File operations
 
 =cut
 
-sub fh { $_[0]->[0] }
+use Carp 'croak';
+sub fh    { croak "InputStream fh called" }
+sub read  { CORE::read $_[0]->[0], $_[1], $_[2] }
+sub seek  { CORE::seek $_[0]->[0], $_[1], $_[2] }
+sub tell  { CORE::tell $_[0]->[0] }
+sub getc  { CORE::getc $_[0]->[0] }
+sub print { croak "InputStream print called" }
+sub eof   { CORE::eof $_[0]->[0] }
+sub close { CORE::close $_[0]->[0] }
 
 =head2 clone
 
@@ -57,9 +61,9 @@ This will return a clone of this stream.
 =cut
 
 sub clone {
-	my $orig = shift;
-	my $clone = $orig->new(@{$orig}[ 1, 2 ]);
-	$clone->[0]->seek($orig->[0]->tell, 0);
+	my $orig  = shift;
+	my $clone = $orig->new($orig->[1]);
+	CORE::seek($clone->[0], CORE::tell($orig->[0]), 0);
 	return $clone;
 }
 
@@ -69,7 +73,7 @@ This will read and return a single byte.
 
 =cut
 
-sub read_byte { ord $_[0]->[0]->getc }
+sub read_byte { ord CORE::getc $_[0]->[0] }
 
 =head2 read_int
 
@@ -78,9 +82,8 @@ This will read four bytes and return an integer.
 =cut
 
 sub read_int {
-	my $self = shift;
-	my $buf  = "\0" x 4;
-	$self->[0]->read($buf, 4);
+	my $buf;
+	CORE::read $_[0]->[0], $buf, 4;
 	return unpack("N", $buf);
 }
 
@@ -91,11 +94,10 @@ This will read an integer stored in a variable-length format.
 =cut
 
 sub read_vint {
-	my $self = shift;
-	my $b    = $self->read_byte();
-	my $i    = $b & 0x7F;
+	my $b = ord CORE::getc($_[0]->[0]);
+	my $i = $b & 0x7F;
 	for (my $s = 7 ; ($b & 0x80) != 0 ; $s += 7) {
-		$b = $self->read_byte();
+		$b = ord CORE::getc $_[0]->[0];
 		$i |= ($b & 0x7F) << $s;
 	}
 	return $i;
@@ -107,7 +109,8 @@ This will read a long and stored in variable-length format
 
 =cut
 
-*read_vlong = *read_vint;    # Perl is type-agnostic. ;)
+*read_vlong = *read_vint;   # Perl is type-agnostic. ;)
+                            # Yes, but most Perls don't handle 64bit integers!
 
 =head2 read_string
 
@@ -116,10 +119,9 @@ This will read a string.
 =cut
 
 sub read_string {
-	my $self   = shift;
-	my $length = $self->read_vint();
+	my $length = $_[0]->read_vint();
 	my $utf8;
-	$self->[0]->read($utf8, $length);
+	CORE::read $_[0]->[0], $utf8, $length;
 	_utf8_on($utf8);
 	return $utf8;
 }
@@ -131,9 +133,9 @@ This will read eight bytes and return a long.
 =cut
 
 sub read_long {
-	my $self  = shift;
-	my $int_a = $self->read_int;
-	my $int_b = $self->read_int;    # Order is important!
+	my $int_a = $_[0]->read_int;
+	my $int_b = $_[0]->read_int;    # Order is important!
+	                                # and size matters!
 	return (($int_a << 32) | ($int_b & 0xFFFFFFFF));
 }
 
