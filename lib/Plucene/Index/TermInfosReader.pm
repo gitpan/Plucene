@@ -33,7 +33,6 @@ use Carp qw/confess/;
 use Plucene::Index::SegmentTermEnum;
 use Plucene::Index::TermInfosWriter;
 use Plucene::Store::InputStream;
-use DB_File;
 
 =head2 new
 
@@ -50,13 +49,10 @@ sub new {
 	my $file = "$dir/$seg.tis";
 	confess("$file is already open!") unless -s $file;
 
-    my %tis_cache;
-    tie %tis_cache, "DB_File", "$dir/tiscache.$seg";
 	my $self = bless {
 		directory   => $dir,
 		segment     => $seg,
 		field_infos => $fis,
-        cache       => \%tis_cache,
 		enum        => Plucene::Index::SegmentTermEnum->new(
 			Plucene::Store::InputStream->new($file),
 			$fis, 0
@@ -118,19 +114,6 @@ sub _get_index_offset {
 sub get {
 	my ($self, $term) = @_;
 	return unless $self->{size};
-	my $key = join(":", $term->field, $term->text);
-	my $tis = $self->{cache}{$key} or return $self->_get_heavy($term);
-	my ($df, $fp, $pp) = split /:/, $tis;
-	return Plucene::Index::TermInfo->new({
-		doc_freq => $df,
-		freq_pointer => $fp,
-		prox_pointer => $pp
-	});
-}
-
-sub _get_heavy {
-	my ($self, $term) = @_;
-	return unless $self->{size};
 	$self->_seek_enum($self->_get_index_offset($term));
 	return $self->_scan_enum($term);
 }
@@ -174,7 +157,7 @@ Plucene::Index::Term.
 
 sub terms {
 	my ($self, $term) = @_;
-	$term ? $self->_get_heavy($term) : $self->_seek_enum(0);
+	$term ? $self->get($term) : $self->_seek_enum(0);
 	$self->{enum}->clone;
 }
 

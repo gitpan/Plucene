@@ -143,7 +143,6 @@ sub files {
 	my $self    = shift;
 	my $segment = $self->{segment};
 	my @files   = map "$segment.$_", qw( fnm fdx fdt tii tis frq prx);
-    push @files, "tiscache.$segment";
 	push @files, "$segment.del" if -e "$self->{directory}/$segment.del";
 	my @fi = $self->field_infos->fields;
 	($fi[$_]->is_indexed && push @files, "$segment.f$_") for 0 .. $#fi;

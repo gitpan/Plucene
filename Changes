@@ -1,3 +1,10 @@
+1.19 - Wed 21 July 2004
+    * Removed accidentally-included experimental patches
+
+1.18 - Tue 20 July 2004
+    * Downgraded dependencies to work with Perl 5.6.1                       
+    * Fix to delete_term  
+
 1.17 - Tue 27 Apr 2004
 	* Plucene::Search::Hits::hit_doc should call _get_more_hits not get_more_docs
 		(thanks to Kjetil Fikkan for pointing it out)
