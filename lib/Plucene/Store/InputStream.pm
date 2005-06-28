@@ -19,8 +19,6 @@ A random-access input stream.Used for all Plucene index input operations.
 use strict;
 use warnings;
 
-BEGIN { require Encode::compat if $] < 5.007001 }
-
 use Encode qw(_utf8_on);    # Magic
 
 =head2 new
@@ -75,7 +73,9 @@ This will read and return a single byte.
 
 =cut
 
-sub read_byte { ord CORE::getc $_[0]->[0] }
+sub read_byte {    # unpack C
+	ord CORE::getc $_[0]->[0];
+}
 
 =head2 read_int
 
@@ -83,7 +83,7 @@ This will read four bytes and return an integer.
 
 =cut
 
-sub read_int {
+sub read_int {     # unpack N
 	my $buf;
 	CORE::read $_[0]->[0], $buf, 4;
 	return unpack("N", $buf);
@@ -95,7 +95,7 @@ This will read an integer stored in a variable-length format.
 
 =cut
 
-sub read_vint {
+sub read_vint {    # unpack w
 	my $b = ord CORE::getc($_[0]->[0]);
 	my $i = $b & 0x7F;
 	for (my $s = 7 ; ($b & 0x80) != 0 ; $s += 7) {
@@ -120,7 +120,7 @@ This will read a string.
 
 =cut
 
-sub read_string {
+sub read_string {           # unpack w/a
 	my $length = $_[0]->read_vint();
 	my $utf8;
 	CORE::read $_[0]->[0], $utf8, $length;
@@ -134,7 +134,7 @@ This will read eight bytes and return a long.
 
 =cut
 
-sub read_long {
+sub read_long {    # unpack NN
 	my $int_a = $_[0]->read_int;
 	my $int_b = $_[0]->read_int;    # Order is important!
 	                                # and size matters!

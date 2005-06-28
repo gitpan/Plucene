@@ -35,6 +35,17 @@ directory name, segment and field infos.
 		
 =cut
 
+# private FieldInfos fieldInfos;
+# private OutputStream fieldsStream;
+# private OutputStream indexStream;
+
+# FieldsWriter(Directory d, String segment, FieldInfos fn)
+#      throws IOException {
+#   fieldInfos = fn;
+#   fieldsStream = d.createFile(segment + ".fdt");
+#   indexStream = d.createFile(segment + ".fdx");
+# }
+
 sub new {
 	my ($self, $d, $segment, $fn) = @_;
 	bless {
@@ -45,6 +56,23 @@ sub new {
 	}, $self;
 }
 
+=head2 close
+
+	$writer->close;
+
+=cut
+
+# final void close() throws IOException {
+#   fieldsStream.close();
+#   indexStream.close();
+# }
+
+sub close {
+	my $self = shift;
+	$self->{fields_stream}->close;
+	$self->{index_stream}->close;
+}
+
 =head2 add_document
 
 	$writer->add_document(Plucene::Document $doc);
@@ -52,6 +80,34 @@ sub new {
 This will add the passed Plucene::Document.
 
 =cut
+
+# final void addDocument(Document doc) throws IOException {
+#   indexStream.writeLong(fieldsStream.getFilePointer());
+#
+#   int storedCount = 0;
+#   Enumeration fields  = doc.fields();
+#   while (fields.hasMoreElements()) {
+#     Field field = (Field)fields.nextElement();
+#     if (field.isStored())
+#       storedCount++;
+#   }
+#   fieldsStream.writeVInt(storedCount);
+#
+#   fields  = doc.fields();
+#   while (fields.hasMoreElements()) {
+#     Field field = (Field)fields.nextElement();
+#     if (field.isStored()) {
+#       fieldsStream.writeVInt(fieldInfos.fieldNumber(field.name()));
+#
+#       byte bits = 0;
+#       if (field.isTokenized())
+#         bits |= 1;
+#       fieldsStream.writeByte(bits);
+#
+#       fieldsStream.writeString(field.stringValue());
+#     }
+#   }
+# }
 
 sub add_document {
 	my ($self, $doc) = @_;

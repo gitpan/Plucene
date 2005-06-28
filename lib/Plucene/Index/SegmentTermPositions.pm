@@ -1,5 +1,8 @@
 package Plucene::Index::SegmentTermPositions;
 
+# final class SegmentTermPositions
+#   extends SegmentTermDocs implements TermPositions
+
 =head1 NAME 
 
 Plucene::Index::SegmentTermPositions - Segment term positions
@@ -8,9 +11,9 @@ Plucene::Index::SegmentTermPositions - Segment term positions
 
 	# isa Plucene::Index::SegmentTermDocs
 
-	$seg_term_poss->skipping_doc;
+	$seg_term_pos->skipping_doc;
 
-	my $next = $seg_term_poss->next_position;
+	my $next = $seg_term_pos->next_position;
 
 =head1 DESCRIPTION
 
@@ -27,62 +30,116 @@ use Carp;
 
 use base 'Plucene::Index::SegmentTermDocs';
 
-__PACKAGE__->mk_accessors(qw(prox_stream prox_count));
+__PACKAGE__->mk_accessors(qw(_prox_stream _prox_count));
+
+# private InputStream proxStream;
+# private int proxCount;
+# private int position;
 
 =head2 new
 
-	my $seg_term_poss = Plucene::Index::SegmentTermPositions
+	my $seg_term_pos = Plucene::Index::SegmentTermPositions
 		->new(Plucene::Index::SegmentReader $seg_reader);
-
-=head2 prox_stream / prox_counbt
-
-Get / set these attributes.
-
 =cut
+
+# SegmentTermPositions(SegmentReader p) throws IOException {
+#   super(p);
+#   this.proxStream = (InputStream)parent.proxStream.clone();
+# }
 
 sub new {
 	my $self = shift->SUPER::new(@_);
-	$self->prox_stream($self->parent->prox_stream->clone);
-	$self->prox_count($self->prox_count || 0);
+	$self->{_prox_stream} = $self->parent->prox_stream->clone;
+	$self->{_prox_count}  = 0;
 	return $self;
 }
+
+# final void seek(TermInfo ti) throws IOException {
+#   super.seek(ti);
+#   if (ti != null)
+#     proxStream.seek(ti.proxPointer);
+#   else
+#     proxCount = 0;
+# }
 
 sub _seek {
 	my ($self, $ti) = @_;
 	$self->SUPER::_seek($ti);
-	if ($ti) { $self->prox_stream->seek($ti->prox_pointer, 0) }
-	else { $self->{prox_count} = 0 }
+	if ($ti) {
+		$self->{_prox_stream}->seek($ti->prox_pointer, 0);
+	} else {
+		$self->{_prox_count} = 0;
+	}
+}
+
+=head2 close 
+
+	$seg_term_pos->close;
+
+=cut
+
+# public final void close() throws IOException {
+#	  super.close();
+#   proxStream.close();
+# }
+
+sub close {
+	my $self = shift;
+	$self->SUPER::close;
+	$self->{_prox_stream}->close;
 }
 
 =head2 next_position
 
-	my $next = $seg_term_poss->next_position;
+	my $next = $seg_term_pos->next_position;
 
 =cut
 
+# public final int nextPosition() throws IOException {
+#   proxCount--;
+#   return position += proxStream.readVInt();
+# }
+
 sub next_position {
 	my $self = shift;
-	$self->{prox_count}--;
-	return $self->{position} += $self->prox_stream->read_vint;
+	$self->{_prox_count}--;
+	return $self->{position} += $self->{_prox_stream}->read_vint;
 }
 
 =head2 skipping_doc
 
-	$seg_term_poss->skipping_doc;
+	$seg_term_pos->skipping_doc;
 
 =cut
 
+# protected final void skippingDoc() throws IOException {
+#   for (int f = freq; f > 0; f--)      // skip all positions
+#     proxStream.readVInt();
+# }
+
 sub skipping_doc {
 	my $self = shift;
-	$self->prox_stream->read_vint for 1 .. $self->freq;
+	$self->{_prox_stream}->read_vint for 1 .. $self->freq;
 }
+
+# public final boolean next() throws IOException {
+#   for (int f = proxCount; f > 0; f--)     // skip unread positions
+#     proxStream.readVInt();
+#
+#   if (super.next()) {         // run super
+#     proxCount = freq;         // note frequency
+#     position = 0;         // reset position
+#     return true;
+#   }
+#   return false;
+# }
 
 sub next {
 	my $self = shift;
-	$self->prox_stream->read_vint for 1 .. $self->prox_count;
+	$self->{_prox_stream}->read_vint for 1 .. $self->{_prox_count};
 	if ($self->SUPER::next()) {
-		$self->prox_count($self->freq);
-		$self->{position} = 0;
+		$self->{_prox_count} = $self->freq;
+		$self->{position}    = 0;
 		return 1;
 	}
 	return;
@@ -93,6 +150,11 @@ sub next {
 This should not be called
 
 =cut
+
+# public final int read(final int[] docs, final int[] freqs)
+#   throws IOException {
+#  throw new RuntimeException();
+# }
 
 sub read { croak "'read' should not be called" }
 

@@ -1,3 +1,17 @@
+1.22 - Tue Jun 28 2005
+
+  - perl 5.8 required
+  - use pack and unpack to read/write 'segments' files in SegmentInfos [TB]
+  - Use string xor to find longest common string prefix in
+    TermInfosWriter [Minty / Nicholas Clark]
+  - switch to direct hash access in comparison methods in
+    Plucene::Index::Term [Minty]
+  - remove some indirection in SegmentTermEnum [TB]
+  - remove Plucene::Index::FieldInfo file [TB]
+  - minor speed tweaks to SegmentMergeInfo, SegmentTermPositions [TB]
+  - minor speed tweaks to SegmentsTermEnum (and split out into own file) [TB]
+  - remove Tie::Array::Sorted from SegmentMerger [TB/MP]
+
 1.21 - Mon 24 Jan 2005
   - use pack and unpack to read/write FieldInfos files (.fnm). This
     breaks index compatability with Lucene, as we now use BER

@@ -112,9 +112,11 @@ sub _add_position {
 		$ti->{freq}++;
 		return;
 	}
-	$self->{postings}->{"$field\0$text"} =
-		Plucene::Index::Posting->new(
-		Plucene::Index::Term->new({ field => $field, text => $text }), $pos);
+	$self->{postings}->{"$field\0$text"} = Plucene::Index::Posting->new({
+			term => Plucene::Index::Term->new({ field => $field, text => $text }),
+			positions => [$pos],
+			freq      => 1,
+		});
 }
 
 sub _write_postings {
@@ -171,14 +173,5 @@ package Plucene::Index::Posting;
 use base 'Class::Accessor::Fast';
 
 __PACKAGE__->mk_accessors(qw( term freq positions ));
-
-sub new {
-	my ($self, $term, $pos) = @_;
-	return $self->SUPER::new({
-			term      => $term,
-			positions => [$pos],
-			freq      => 1
-		});
-}
 
 1;

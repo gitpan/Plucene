@@ -6,33 +6,21 @@ Plucene - A Perl port of the Lucene search engine
 
 =head1 SYNOPSIS
 
-First, make your documents
-
-	use Plucene::Document;
-	use Plucene::Document::Field;
+=head2 Create Documents by adding Fields:
 
 	my $doc = Plucene::Document->new;
 	$doc->add(Plucene::Document::Field->Text("content", $content);
 	$doc->add(Plucene::Document::Field->Text("author", "Your Name");
-	...
 
-Next, choose your analyser, and make an index writer.
+=head2 Choose Your Analyser and add documents to an Index Writer
 
-	use Plucene::Index::Writer; 
-	use Plucene::Analysis::SimpleAnalyzer;
-
-	my $writer = Plucene::Index::Writer->new("my_index",
-		Plucene::Analysis::SimpleAnalyzer->new(), 1);
-
-Now write your documents into the index.
+	my $analyzer = Plucene::Analysis::SimpleAnalyzer->new();
+	my $writer = Plucene::Index::Writer->new("my_index", $analyzer, 1);
 
 	$writer->add_document($doc);
 	undef $writer; # close
 
-When you come to search, parse the query and create a searcher:
-
-	use Plucene::QueryParser;
-	use Plucene::Analysis::SimpleAnalyzer;
+=head3 Search by building a Query
 
 	my $parser = Plucene::QueryParser->new({
 		analyzer => Plucene::Analysis::SimpleAnalyzer->new(),
@@ -40,20 +28,17 @@ When you come to search, parse the query and create a searcher:
 	});
 	my $query = $parser->parse('author:"Your Name"');
 
+=hdea3 Then pass the Query to an IndexSearcher and collect hits
+
 	my $searcher = Plucene::Search::IndexSearcher->new("my_index");
 
-Decide what you're going to do with the results:
-
-	use Plucene::Search::HitCollector;
 	my @docs;
 	my $hc = Plucene::Search::HitCollector->new(collect => sub {
-		my ($self, $doc, $score)= @_;
-		push @docs, $plucy->doc($doc);
+		my ($self, $doc, $score) = @_;
+		push @docs, $searcher->doc($doc);
 	});
 
-	$searcher->search_hc($query, $hc);
-
-	# @docs is now a list of Plucene::Document objects.
+	$searcher->search_hc($query => $hc);
 
 =head1 DESCRIPTION
 
@@ -87,9 +72,13 @@ and how to extend it.
 
 =head1 COMPATIBILITY
 
-Plucene should be able to read index files created by Lucene,
-but currently Lucene can not read indexes created or modified by
-Plucene. (This is classed as a bug, and patches to fix it are welcome).
+For the most part Lucene and Plucene indexes are created in the same
+manner. However, due to some minor implementation details, the indexes
+will not always be compatible. 
+
+As Plucene is still undergoing development, we cannot guarantee index
+format compatibility across releases. If you're using Plucene in
+production code, you need to ensure that you can recreate the indexes.
 
 =head1 MISSING FEATURES
 
@@ -117,8 +106,9 @@ L<http://www.kasei.com/mailman/listinfo/plucene>
 
 =head1 AUTHORS
 
-Initial porting: Simon Cozens, C<simon@kasei.com> and Marc Kerr,
-C<mwk@kasei.com>
+Initially ported by Simon Cozens and Marc Kerr.
+
+Currently maintained by Tony Bowden and Marty Pauley.
 
 Original Java Lucene by Doug Cutting and others.
 
@@ -135,6 +125,6 @@ This software is licensed under the same terms as Perl itself.
 use strict;
 use warnings;
 
-our $VERSION = "1.21";
+our $VERSION = "1.22";
 
 1;

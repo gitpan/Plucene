@@ -51,9 +51,9 @@ Get / set these attributes.
 			
 =cut
 
-sub doc_freq     { shift->term_info->doc_freq(@_) }
-sub freq_pointer { shift->term_info->freq_pointer(@_) }
-sub prox_pointer { shift->term_info->prox_pointer(@_) }
+sub doc_freq     { shift->{term_info}->doc_freq(@_) }
+sub freq_pointer { shift->{term_info}->freq_pointer(@_) }
+sub prox_pointer { shift->{term_info}->prox_pointer(@_) }
 
 # term_info must return a clone
 
@@ -114,9 +114,9 @@ sub next {
 		undef $self->{term};
 		return;
 	}
-	$self->{prev} = $self->{term};
-	$self->{term} = $self->read_term();
-	$self->{term_info}->doc_freq($self->{input}->read_vint);
+	$self->{prev}                  = $self->{term};
+	$self->{term}                  = $self->read_term();
+	$self->{term_info}->{doc_freq} = $self->{input}->read_vint;
 	$self->{term_info}->{freq_pointer} += $self->{input}->read_vlong;
 	$self->{term_info}->{prox_pointer} += $self->{input}->read_vlong;
 	$self->{index_pointer} += $self->{input}->read_vlong if $self->{is_index};

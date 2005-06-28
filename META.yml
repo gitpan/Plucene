@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name: Plucene
-version: 1.21
+version: 1.22
 license: unknown
 distribution_type: module
 requires:
@@ -27,7 +27,7 @@ conflicts: {}
 provides:
   Plucene:
     file: lib/Plucene.pm
-    version: 1.21
+    version: 1.22
   Plucene::Analysis::Analyzer:
     file: lib/Plucene/Analysis/Analyzer.pm
   Plucene::Analysis::CharTokenizer:
@@ -70,8 +70,6 @@ provides:
     file: lib/Plucene/Document/Field.pm
   Plucene::Index::DocumentWriter:
     file: lib/Plucene/Index/DocumentWriter.pm
-  Plucene::Index::FieldInfo:
-    file: lib/Plucene/Index/FieldInfo.pm
   Plucene::Index::FieldInfos:
     file: lib/Plucene/Index/FieldInfos.pm
   Plucene::Index::FieldsReader:
@@ -105,7 +103,7 @@ provides:
   Plucene::Index::SegmentsTermDocs:
     file: lib/Plucene/Index/SegmentsReader.pm
   Plucene::Index::SegmentsTermEnum:
-    file: lib/Plucene/Index/SegmentsReader.pm
+    file: lib/Plucene/Index/SegmentsTermEnum.pm
   Plucene::Index::SegmentsTermPositions:
     file: lib/Plucene/Index/SegmentsReader.pm
   Plucene::Index::Term:

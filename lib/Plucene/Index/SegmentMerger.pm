@@ -23,8 +23,6 @@ use strict;
 use warnings;
 no warnings 'uninitialized';
 
-use Tie::Array::Sorted;
-
 use Plucene::Index::FieldInfos;
 use Plucene::Index::FieldsWriter;
 use Plucene::Index::SegmentMergeInfo;
@@ -112,11 +110,8 @@ sub _merge_terms {
 sub _merge_term_infos {
 	my $self = shift;
 	my $base = 0;
-	tie my @queue, "Tie::Array::Sorted", sub {
-		$_[0]->term->_cmp($_[1]->term)
-			|| $_[0]->base <=> $_[1]->base;
-	};    # This is a SegmentMergeQueue
 
+	my @queue;
 	for my $reader (@{ $self->{readers} }) {
 		my $smi =
 			Plucene::Index::SegmentMergeInfo->new($base, $reader->terms, $reader);
@@ -124,22 +119,25 @@ sub _merge_term_infos {
 		push @queue, $smi if $smi->next;
 	}
 
-	my @match;
+	# We used to use Tie::Array::Sorted here to mirror the Java, but we
+	# replaced this with an approach that just scans the tops of the lists
+	# each time, rather than having to keep them sorted. TB/MP 28/vi/05
 	while (scalar @queue > 0) {
-		push @match, shift @queue;
-
-		my $term = $match[0]->term;
-		my $top  = $queue[0];
-		while ($top and $term->eq($top->term)) {
-			push @match, shift @queue;
-			$top = $queue[0];
+		my @min;
+		my $min = $queue[0]->term;
+		foreach my $smi (@queue) {
+			my $term = $smi->term or next;
+			if ($term->lt($min)) {
+				@min = ($smi);
+				$min = $term;
+			} elsif ($term->eq($min)) {
+				push @min, $smi;
+			}
 		}
 
-		$self->_merge_term_info(@match);
-		while (@match > 0) {
-			my $smi = pop @match;
-			push @queue, $smi if $smi->next;
-		}
+		$self->_merge_term_info(@min);
+		$_->next foreach @min;
+		@queue = grep $_->term, @queue;
 	}
 	$self->{term_infos_writer}->break_ref;
 }
@@ -156,25 +154,6 @@ sub _merge_term_info {
 				prox_pointer => $pp
 			}))
 		if $df > 0;
-}
-
-sub _merge_norms {
-	my $self   = shift;
-	my @fields = $self->{field_infos}->fields;
-	for (0 .. $#fields) {
-		my $fi = $fields[$_];
-		next unless $fi->is_indexed;
-		my $output =
-			Plucene::Store::OutputStream->new(my $file =
-				"$self->{dir}/$self->{segment}.f$_");
-		for my $reader (@{ $self->{readers} }) {
-			my $input = $reader->norm_stream($fi->name);
-			for (0 .. $reader->max_doc - 1) {
-				$output->print(chr($input ? $input->read_byte : 0))
-					unless $reader->is_deleted($_);
-			}
-		}
-	}
 }
 
 sub _append_postings {
@@ -213,6 +192,25 @@ sub _append_postings {
 		}
 	}
 	return $df;
+}
+
+sub _merge_norms {
+	my $self   = shift;
+	my @fields = $self->{field_infos}->fields;
+	for (0 .. $#fields) {
+		my $fi = $fields[$_];
+		next unless $fi->is_indexed;
+		my $output =
+			Plucene::Store::OutputStream->new(my $file =
+				"$self->{dir}/$self->{segment}.f$_");
+		for my $reader (@{ $self->{readers} }) {
+			my $input = $reader->norm_stream($fi->name);
+			for (0 .. $reader->max_doc - 1) {
+				$output->print(chr($input ? $input->read_byte : 0))
+					unless $reader->is_deleted($_);
+			}
+		}
+	}
 }
 
 1;

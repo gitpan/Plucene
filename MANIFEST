@@ -1,9 +1,7 @@
+bin/dump_index
+bin/transform-fdt
 Build.PL
 Changes
-MANIFEST
-Makefile.PL
-README
-bin/dump_index
 lib/Plucene.pm
 lib/Plucene/Analysis/Analyzer.pm
 lib/Plucene/Analysis/CharTokenizer.pm
@@ -26,7 +24,6 @@ lib/Plucene/Document.pm
 lib/Plucene/Document/DateSerializer.pm
 lib/Plucene/Document/Field.pm
 lib/Plucene/Index/DocumentWriter.pm
-lib/Plucene/Index/FieldInfo.pm
 lib/Plucene/Index/FieldInfos.pm
 lib/Plucene/Index/FieldsReader.pm
 lib/Plucene/Index/FieldsWriter.pm
@@ -36,10 +33,11 @@ lib/Plucene/Index/SegmentInfos.pm
 lib/Plucene/Index/SegmentMergeInfo.pm
 lib/Plucene/Index/SegmentMerger.pm
 lib/Plucene/Index/SegmentReader.pm
+lib/Plucene/Index/SegmentsReader.pm
+lib/Plucene/Index/SegmentsTermEnum.pm
 lib/Plucene/Index/SegmentTermDocs.pm
 lib/Plucene/Index/SegmentTermEnum.pm
 lib/Plucene/Index/SegmentTermPositions.pm
-lib/Plucene/Index/SegmentsReader.pm
 lib/Plucene/Index/Term.pm
 lib/Plucene/Index/TermInfo.pm
 lib/Plucene/Index/TermInfosReader.pm
@@ -71,6 +69,10 @@ lib/Plucene/Store/InputStream.pm
 lib/Plucene/Store/OutputStream.pm
 lib/Plucene/TestCase.pm
 lib/Plucene/Utils.pm
+Makefile.PL
+MANIFEST
+META.yml			Module meta-data (added by MakeMaker)
+README
 t/analyzers.t
 t/data/book1
 t/data/book10
@@ -99,8 +101,8 @@ t/data/book9
 t/data/preface
 t/datesearch.t
 t/dateserializer.t
-t/delete.t
 t/deletable.t
+t/delete.t
 t/indexsearcher.t
 t/mergefactor.t
 t/queryparser.t
@@ -120,4 +122,3 @@ t/tokenfilter.t
 t/tokenizer.t
 t/utf8.t
 t/words.txt
-META.yml                                 Module meta-data (added by MakeMaker)

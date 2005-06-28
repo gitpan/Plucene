@@ -32,6 +32,7 @@ use Carp;
 use Plucene::Index::SegmentInfo;
 use Plucene::Store::InputStream;
 use Plucene::Store::OutputStream;
+use File::Slurp;
 
 =head2 new
 
@@ -53,18 +54,16 @@ This will read the segments file from the passed directory.
 
 sub read {
 	my ($self, $directory) = @_;
-	my $stream = Plucene::Store::InputStream->new("$directory/segments");
-
-	my $count    = $stream->read_int;
-	my $segments = $stream->read_int;
+	my ($count, @unpack) = unpack "NN/(w/aN)", read_file("$directory/segments");
 	my @segs;
-	push @segs,
-		bless {
-		name      => $stream->read_string,
-		doc_count => $stream->read_int,
-		dir       => $directory
-		} => 'Plucene::Index::SegmentInfo'
-		for 1 .. $segments;
+	while (my ($name, $count) = splice @unpack, 0, 2) {
+		push @segs,
+			bless {
+			name      => $name,
+			doc_count => $count,
+			dir       => $directory,
+			} => 'Plucene::Index::SegmentInfo';
+	}
 	$self->{segments} = \@segs;
 	$self->{counter}  = $count;
 }
@@ -79,16 +78,14 @@ This will write the segments info file out.
 
 sub write {
 	my ($self, $directory) = @_;
-	my $segfile = "$directory/segments";
-	my $output  = Plucene::Store::OutputStream->new($segfile . ".new");
-	$output->write_int($self->{counter});
-	$output->write_int(scalar @{ $self->{segments} });
-	for my $seg ($self->segments) {
-		$output->write_string($seg->name);
-		$output->write_int($seg->doc_count);
-	}
-	$output->close;
-	rename($segfile . ".new", $segfile);
+	my $segfile  = "$directory/segments";
+	my $tempfile = "${segfile}.new";
+	my @segs     = $self->segments;
+	my $template = "NN" . ("w/a*N" x @segs);
+	my $packed   = pack $template, $self->{counter} || 0, scalar @segs,
+		map { $_->name => $_->doc_count } @segs;
+	write_file($tempfile => $packed);
+	rename($tempfile => $segfile);
 }
 
 =head2 add_element

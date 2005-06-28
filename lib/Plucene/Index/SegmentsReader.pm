@@ -34,11 +34,8 @@ This is the segments reader class.
 use strict;
 use warnings;
 
-use Plucene::Index::SegmentMergeInfo;
-
 use List::Util qw(sum);
-use Carp qw(cluck);
-use Tie::Array::Sorted;
+use Plucene::Index::SegmentsTermEnum;
 
 use base qw(Plucene::Index::Reader Class::Accessor::Fast);
 
@@ -220,67 +217,6 @@ sub term_positions {
 		$self->{starts});
 	if ($term) { $pos->seek($term) }
 	return $pos;
-}
-
-# TODO
-#
-# Move these to a file of their own. Possibly.
-#
-
-package Plucene::Index::SegmentsTermEnum;
-
-# Wondered why I hadn't seen that before
-
-use base 'Class::Accessor::Fast';
-__PACKAGE__->mk_accessors(qw(doc_freq term));
-
-sub new {
-	my ($class, $readers, $starts, $t) = @_;
-	my @queue;
-	tie @queue, "Tie::Array::Sorted";
-	for my $i (0 .. $#{$readers}) {
-		my $reader    = $readers->[$i];
-		my $term_enum = $reader->terms($t);
-		my $smi       =
-			Plucene::Index::SegmentMergeInfo->new($starts->[$i], $term_enum,
-			$reader);
-		if (!$t ? $smi->next : $term_enum->term) {    # ???
-			push @queue, $smi;
-		}
-	}
-	my $self = bless { queue => \@queue }, $class;
-	if ($t and @queue) {
-		my $top = $queue[0];
-		$self->{term}     = $top->term_enum->term;
-		$self->{doc_freq} = $top->term_enum->doc_freq;
-	}
-	return $self;
-}
-
-sub next {
-	my $self = shift;
-	my $top  = $self->{queue}[0];
-	if (!$top) {
-		undef $self->{term};
-		return;
-	}
-
-	$self->{term}     = $top->term;
-	$self->{doc_freq} = 0;
-	while ($top && $self->{term}->eq($top->term)) {
-		$self->{doc_freq} += $top->term_enum->doc_freq;
-
-		# This might look funny, but it's right. The pop takes $top off
-		# the queue, and when it has ->next called on it, its comparison
-		# value changes; the queue is tied as a Tie::Array::Sorted, so
-		# when it gets added back on, it may be put somewhere else.
-		pop @{ $self->{queue} };
-		if ($top->next) {
-			unshift @{ $self->{queue} }, $top;
-		}
-		$top = $self->{queue}[0];
-	}
-	return 1;
 }
 
 package Plucene::Index::SegmentsTermDocs;

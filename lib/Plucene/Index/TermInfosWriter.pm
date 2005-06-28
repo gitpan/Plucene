@@ -127,12 +127,13 @@ This will write the term to the term infos file.
 
 sub write_term {
 	my ($self, $term) = @_;
-	my $start = 0;
 	my $text = $term->text || "";
 	no warnings 'uninitialized';
-	$start++ while $start < length $text
-		and substr($text, 0, $start + 1) eq
-		substr($self->{last_term}->text, 0, $start + 1);
+
+	# Find longest common prefix
+	($text ^ $self->{last_term}->text) =~ /^(\0*)/;
+	my $start = length $1;
+
 	$self->{output}->write_vint($start);
 	$self->{output}->write_string(substr($text, $start));
 	$self->{output}

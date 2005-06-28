@@ -35,14 +35,10 @@ the field infos file.
 use strict;
 use warnings;
 
-use Carp qw(confess cluck);
+use Carp qw(confess);
 use File::Slurp;
-
-use Plucene::Document;
-use Plucene::Document::Field;
-use Plucene::Index::FieldInfo;
-use Plucene::Store::InputStream;
-use Plucene::Store::OutputStream;
+use Class::Struct 'Plucene::Index::FieldInfo' =>
+	[ name => '$', is_indexed => '$', number => '$' ];
 
 =head2 new
 
@@ -58,7 +54,7 @@ sub new {
 	my ($class, $dir, $file) = @_;
 	my $self = bless {}, $class;
 	$file
-		? $self->_read(Plucene::Store::InputStream->new("$dir/$file"))
+		? $self->_read("$dir/$file")
 		: $self->_add_internal("", 0);
 	return $self;
 }
@@ -94,11 +90,11 @@ sub add {
 
 sub _add_internal {
 	my ($self, $name, $indexed) = @_;
-	my $fi = bless {
+	my $fi = Plucene::Index::FieldInfo->new(
 		name       => $name,
 		is_indexed => $indexed,
 		number     => $#{ $self->{bynumber} } + 1,
-	} => 'Plucene::Index::FieldInfo';
+	);
 	push @{ $self->{bynumber} }, $fi;
 	$self->{byname}{$name} = $fi;
 }
@@ -181,8 +177,8 @@ sub write {
 }
 
 sub _read {
-	my ($self, $file) = @_;
-	my @fields = unpack "w/(w/aC)", read_file($file->[1]);
+	my ($self, $filename) = @_;
+	my @fields = unpack "w/(w/aC)", read_file($filename);
 	while (my ($field, $indexed) = splice @fields, 0, 2) {
 		$self->_add_internal($field => $indexed);
 	}

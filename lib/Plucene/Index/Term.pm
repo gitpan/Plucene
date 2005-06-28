@@ -44,13 +44,32 @@ Exactly what you would think they are.
 
 =cut
 
-sub _cmp { ($_[0]->field cmp $_[1]->field) || ($_[0]->text cmp $_[1]->text) }
-sub eq { $_[0]->field eq $_[1]->field && $_[0]->text eq $_[1]->text }
-sub ne { $_[0]->field ne $_[1]->field || $_[0]->text ne $_[1]->text }
+sub _cmp {
+	($_[0]->{field} cmp $_[1]->{field}) || ($_[0]->{text} cmp $_[1]->{text});
+}
 
-sub lt { ($_[0]->field cmp $_[1]->field || $_[0]->text cmp $_[1]->text) < 0 }
-sub gt { ($_[0]->field cmp $_[1]->field || $_[0]->text cmp $_[1]->text) > 0 }
-sub ge { ($_[0]->field cmp $_[1]->field || $_[0]->text cmp $_[1]->text) >= 0 }
-sub le { ($_[0]->field cmp $_[1]->field || $_[0]->text cmp $_[1]->text) <= 0 }
+sub eq {
+	$_[0]->{field} eq $_[1]->{field} && $_[0]->{text} eq $_[1]->{text};
+}
+
+sub ne {
+	$_[0]->{field} ne $_[1]->{field} || $_[0]->{text} ne $_[1]->{text};
+}
+
+sub lt {
+	($_[0]->{field} cmp $_[1]->{field} || $_[0]->{text} cmp $_[1]->{text}) < 0;
+}
+
+sub gt {
+	($_[0]->{field} cmp $_[1]->{field} || $_[0]->{text} cmp $_[1]->{text}) > 0;
+}
+
+sub ge {
+	($_[0]->{field} cmp $_[1]->{field} || $_[0]->{text} cmp $_[1]->{text}) >= 0;
+}
+
+sub le {
+	($_[0]->{field} cmp $_[1]->{field} || $_[0]->{text} cmp $_[1]->{text}) <= 0;
+}
 
 1;
