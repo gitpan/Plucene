@@ -26,6 +26,8 @@ your filtering criteria. In this approach, your filter is called only for
 hits that returned by the search method which may be only a subset of the 
 non zero matches (useful when evaluating your search filter is expensive). 
 
+=back 
+
 =cut
 
 use strict;

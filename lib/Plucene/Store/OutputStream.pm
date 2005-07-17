@@ -39,6 +39,8 @@ sub new {
 	bless [ $fh, $filename ], $self;
 }
 
+sub DESTROY { CORE::close $_[0]->[0] }
+
 =head2 clone
 
 Clone this

@@ -95,8 +95,8 @@ sub seek {
 	$self->{position} = $p;
 	$self->{term}     = $t;
 	undef $self->{prev};
-	$self->{term_info}->copy_in($ti);
-	$self->{buffer} = $t->text;
+	$self->{term_info} = $ti->clone;
+	$self->{buffer}    = $t->text;
 }
 
 =head2 prev / next

@@ -2,7 +2,7 @@ package Plucene::Index::DocumentWriter;
 
 =head1 NAME 
 
-Plucen::Index::DocumentWriter - the document writer
+Plucene::Index::DocumentWriter - the document writer
 
 =head1 SYNOPSIS
 

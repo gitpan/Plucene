@@ -1,3 +1,14 @@
+1.23 - Sun 17 July 2005
+  - Stop rolling our own sorting in SegmentMerger/merge_term_infos [Minty]
+  - Replace sequence of read_byte() calls in SegmentReader with one
+    direct call to read() [Aaron Crane]
+  - add a fast clone() method to Plucene::Index::TermInfo [TB]
+    - and use it in preference to copy_in() [Minty]
+  - close the file at DESTROY in Input/Output Stream classes [Minty]
+  - Improve POD for Document::Field [Geoff Richards]
+  - minor POD fixes [Minty / TB]
+  - add indexing benchmark script [TB]
+
 1.22 - Tue Jun 28 2005
 
   - perl 5.8 required

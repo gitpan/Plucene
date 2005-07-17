@@ -38,6 +38,8 @@ sub new {
 	bless [ $fh, $filename ], $self;
 }
 
+sub DESTROY { CORE::close $_[0]->[0] }
+
 =head2 fh / read / seek / tell / getc / print / eof / close
 
 File operations

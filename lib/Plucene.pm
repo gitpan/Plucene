@@ -9,8 +9,8 @@ Plucene - A Perl port of the Lucene search engine
 =head2 Create Documents by adding Fields:
 
 	my $doc = Plucene::Document->new;
-	$doc->add(Plucene::Document::Field->Text("content", $content);
-	$doc->add(Plucene::Document::Field->Text("author", "Your Name");
+	$doc->add(Plucene::Document::Field->Text(content => $content));
+	$doc->add(Plucene::Document::Field->Text(author => "Your Name"));
 
 =head2 Choose Your Analyser and add documents to an Index Writer
 
@@ -28,7 +28,7 @@ Plucene - A Perl port of the Lucene search engine
 	});
 	my $query = $parser->parse('author:"Your Name"');
 
-=hdea3 Then pass the Query to an IndexSearcher and collect hits
+=head3 Then pass the Query to an IndexSearcher and collect hits
 
 	my $searcher = Plucene::Search::IndexSearcher->new("my_index");
 
@@ -53,7 +53,7 @@ all together.
 
 =head1 EXTENSIONS
 
-Plucene comes shipped with some default Analyzsers. However it is
+Plucene comes shipped with some default Analyzers. However it is
 expected that users will want to create Analyzers to meet their own
 needs. To avoid namespace corruption, anyone releasing such Analyzers
 to CPAN (which is encouraged!) should place them in the namespace
@@ -125,6 +125,6 @@ This software is licensed under the same terms as Perl itself.
 use strict;
 use warnings;
 
-our $VERSION = "1.22";
+our $VERSION = "1.23";
 
 1;

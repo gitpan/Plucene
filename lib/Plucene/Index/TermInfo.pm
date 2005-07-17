@@ -35,21 +35,25 @@ Get / set term info.
 
 __PACKAGE__->mk_accessors(qw( doc_freq freq_pointer prox_pointer ));
 
-=head2 copy_in 
+=head2 copy_in  / clone
 
 	$term_info1->copy_in($term_info2);
 
-This will make $term_info1 be the same as $term_info2.
+	my $term_info1 = $term_info2->clone;
+
+These will make $term_info1 be the same as $term_info2.
 	
 =cut
 
 sub copy_in {
 	my ($self, $other) = @_;
-	Carp::confess("copy_in needs a Plucene::Index::TermInfo object")
-		unless UNIVERSAL::isa($other, ref $self);
-	$self->doc_freq($other->doc_freq);
-	$self->freq_pointer($other->freq_pointer);
-	$self->prox_pointer($other->prox_pointer);
+	%$self = %$other;
+	return $self;
+}
+
+sub clone {
+	my $self = shift;
+	return bless {%$self} => ref $self;
 }
 
 1;

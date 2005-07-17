@@ -1,3 +1,4 @@
+bin/benchmark
 bin/dump_index
 bin/transform-fdt
 Build.PL
@@ -122,3 +123,4 @@ t/tokenfilter.t
 t/tokenizer.t
 t/utf8.t
 t/words.txt
+t/99_pod.t

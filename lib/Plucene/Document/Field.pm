@@ -14,10 +14,10 @@ Plucene::Document::Field - A field in a Plucene::Document
 
 =head1 DESCRIPTION
 
-Each Plucene::Document is made up of Plucene::Document::Fields. Each of these
-fields can be stored, indexed or tokenised.
+Each Plucene::Document is made up of Plucene::Document::Field
+objects. Each of these fields can be stored, indexed or tokenised.
 
-=head1 METHODS
+=head1 FIELDS
 
 =cut
 
@@ -25,18 +25,44 @@ use strict;
 use warnings;
 
 use base qw(Class::Accessor::Fast);
-
 __PACKAGE__->mk_accessors(
 	qw(name string is_stored is_indexed is_tokenized reader));
 
+=head2 name
+
+Returns the name of the field.
+
+=head2 string
+
+Returns the value of the field.
+
+=head2 is_stored
+
+Returns true if the field is or will be stored, or false if it was
+created with C<UnStored>.
+
+=head2 is_indexed
+
+Returns true if the field is or will be indexed, or false if it was
+created with C<UnIndexed>.
+
+=head2 is_tokenized
+
+Returns true if the field is or will be tokenized, or false if it was
+created with C<UnIndexed> or C<Keyword>.
+
+=cut
+
 use Carp qw(confess);
+
+=head1 METHODS
 
 =head2 Keyword
 
 	my $field = Plucene::Document::Field->Keyword($name, $string);
 
 This will make a new Plucene::Document::Field object that is stored 
-and indexed, but not tokenised..
+and indexed, but not tokenised.
 	
 =cut
 

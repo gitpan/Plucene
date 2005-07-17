@@ -10,13 +10,15 @@ transform-fdt - transform .fdt files to new file format
 
 =head1 DESCRIPTION
 
-Version 1.22 of Plucene changed the file format slightly for .fdt
-files. This script will take files of the old format and rewrite
-them using the new format. Old files will be renamed to have a ".BAK"
-extension.
+We are going to change the file format slightly for .fdt files. This
+script will take files of the old format and rewrite them using the new
+format. Old files will be renamed to have a ".BAK" extension.
 
 Running this script multiple times against the same file should cause
-an error. The old file will be
+an error. 
+
+NOTE: The file format has not changed yet, so you should not run this.
+It is for testing purposes for core developers only at this point.
 
 =cut
 

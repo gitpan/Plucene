@@ -58,7 +58,7 @@ sub new {
 		),
 	}, $class;
 	confess("No field_infos!") unless $self->{field_infos};
-	$self->{output}->write_int(0);    # Will be filled in later
+	$self->{output}->write_int(0);    # Will be filled in when DESTROYed
 	if (!$is_i) {
 		$self->{other} = $class->new($d, $segment, $fis, 1);
 		$self->{other}->{other} = $self;    # My enemy's enemy is my friend
@@ -113,7 +113,7 @@ sub add {
 		$self->{last_index_pointer} = $self->{other}->{output}->tell;
 	}
 
-	$self->{last_ti}->copy_in($ti);
+	$self->{last_ti} = $ti->clone;
 	$self->{size}++;
 }
 

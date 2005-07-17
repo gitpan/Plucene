@@ -251,8 +251,8 @@ sub max_doc { $_[0]->fields_reader->size; }
 
 	my $norms = $seg_reader->norms($field, $offset);
 
-This returns the byte-encoded normalisation factor for the passed field. This
-us used by the search code to score documents.
+This returns the byte-encoded normalisation factor for the passed
+field. This is used by the search code to score documents.
 
 Note we are not using the 'offset' and 'bytes' arguments per the Java.
 Instead, callers should use substr to put the result of "norms" into 
@@ -269,9 +269,8 @@ sub norms {
 sub _norm_read_from_stream {
 	my ($self, $field) = @_;
 	my $ns = $self->norm_stream($field) or return;
-	my $output = "";
-	$output .= chr($ns->read_byte()) for 1 .. $self->max_doc;
-	$output;
+	$ns->read(my $output, $self->max_doc);
+	return $output;
 }
 
 =head2 norm_stream

@@ -119,79 +119,75 @@ sub _merge_term_infos {
 		push @queue, $smi if $smi->next;
 	}
 
-	# We used to use Tie::Array::Sorted here to mirror the Java, but we
-	# replaced this with an approach that just scans the tops of the lists
-	# each time, rather than having to keep them sorted. TB/MP 28/vi/05
-	while (scalar @queue > 0) {
-		my @min;
-		my $min = $queue[0]->term;
+	#  store every term in every reader/tmp segment in %pool
+	my %pool;
+	{
+		my $index = 0;
 		foreach my $smi (@queue) {
-			my $term = $smi->term or next;
-			if ($term->lt($min)) {
-				@min = ($smi);
-				$min = $term;
-			} elsif ($term->eq($min)) {
-				push @min, $smi;
+			while (my $term = $smi->term) {
+				push(
+					@{ $pool{ $term->{field} }->{ $term->{text} } },
+					[ $term, $index, $smi->term_enum->term_info->clone ]);
+				$smi->next;
 			}
+			++$index;
 		}
-
-		$self->_merge_term_info(@min);
-		$_->next foreach @min;
-		@queue = grep $_->term, @queue;
 	}
+
+	# Now, by sorting our hash, we deal with each term in order:
+	foreach my $field (sort keys %pool) {
+		foreach my $term (sort keys %{ $pool{$field} }) {
+			my @min = @{ $pool{$field}->{$term} };
+			my ($fp, $pp) =
+				($self->{freq_output}->tell, $self->{prox_output}->tell);
+
+			# inlined append_postings
+			my ($df, $last_doc);
+			foreach my $item (@min) {
+				my $smi      = $queue[ $item->[1] ];
+				my $postings = $smi->postings;
+				my $base     = $smi->base;
+				my $docmap   = $smi->doc_map;
+				my $ti       = $item->[2];
+				$postings->seek($ti);
+				while ($postings->next) {
+					my $doc = $base + (
+						$docmap
+						? ($docmap->[ $postings->doc ] || 0)
+						: $postings->doc
+					);
+					die "Docs out of order ($doc < $last_doc)" if $doc < $last_doc;
+					my $doc_code = ($doc - $last_doc) << 1;
+					$last_doc = $doc;
+					my $freq = $postings->freq;
+					if ($freq == 1) {
+						$self->{freq_output}->write_vint($doc_code | 1);
+					} else {
+						$self->{freq_output}->write_vint($doc_code);
+						$self->{freq_output}->write_vint($freq);
+					}
+					my $last_pos = 0;
+					for (0 .. $freq - 1) {
+						my $pos = $postings->next_position;
+						$self->{prox_output}->write_vint($pos - $last_pos);
+						$last_pos = $pos;
+					}
+					$df++;
+				}    # end while there are postings
+			}    # end foreach $smi (reader) that contains the current term
+
+			# inlined _merge_term_info
+			$self->{term_infos_writer}->add(
+				$min[0]->[0],
+				Plucene::Index::TermInfo->new({
+						doc_freq     => $df,
+						freq_pointer => $fp,
+						prox_pointer => $pp
+					}));
+		}    # end foreach term
+	}    # end foreach field
+
 	$self->{term_infos_writer}->break_ref;
-}
-
-sub _merge_term_info {
-	my ($self, @smis) = @_;
-	my ($fp, $pp) = ($self->{freq_output}->tell, $self->{prox_output}->tell);
-	my $df = $self->_append_postings(@smis);
-	$self->{term_infos_writer}->add(
-		$smis[0]->term,
-		Plucene::Index::TermInfo->new({
-				doc_freq     => $df,
-				freq_pointer => $fp,
-				prox_pointer => $pp
-			}))
-		if $df > 0;
-}
-
-sub _append_postings {
-	my ($self, @smis) = @_;
-	my ($last_doc, $df);
-	my $term_info = Plucene::Index::TermInfo->new();
-	for my $smi (@smis) {
-		my $postings = $smi->postings;
-		my $base     = $smi->base;
-		my $docmap   = $smi->doc_map;
-		$term_info->copy_in($smi->term_enum->term_info);
-		$postings->seek($term_info);
-		while ($postings->next) {
-			my $doc = $base + (
-				$docmap
-				? ($docmap->[ $postings->doc ] || 0)
-				: $postings->doc
-			);
-			die "Docs out of order ($doc < $last_doc)" if $doc < $last_doc;
-			my $doc_code = ($doc - $last_doc) << 1;
-			$last_doc = $doc;
-			my $freq = $postings->freq;
-			if ($freq == 1) {
-				$self->{freq_output}->write_vint($doc_code | 1);
-			} else {
-				$self->{freq_output}->write_vint($doc_code);
-				$self->{freq_output}->write_vint($freq);
-			}
-			my $last_pos = 0;
-			for (0 .. $freq - 1) {
-				my $pos = $postings->next_position;
-				$self->{prox_output}->write_vint($pos - $last_pos);
-				$last_pos = $pos;
-			}
-			$df++;
-		}
-	}
-	return $df;
 }
 
 sub _merge_norms {
