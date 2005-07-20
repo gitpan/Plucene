@@ -49,7 +49,8 @@ __PACKAGE__->mk_accessors(qw(_prox_stream _prox_count));
 
 sub new {
 	my $self = shift->SUPER::new(@_);
-	$self->{_prox_stream} = $self->parent->prox_stream->clone;
+	$self->{_prox_stream} = $self->parent->prox_stream;
+	$self->{_prox_ptr}    = 0;
 	$self->{_prox_count}  = 0;
 	return $self;
 }
@@ -66,7 +67,7 @@ sub _seek {
 	my ($self, $ti) = @_;
 	$self->SUPER::_seek($ti);
 	if ($ti) {
-		$self->{_prox_stream}->seek($ti->prox_pointer, 0);
+		$self->{_prox_ptr} = $ti->prox_pointer;
 	} else {
 		$self->{_prox_count} = 0;
 	}
@@ -83,12 +84,6 @@ sub _seek {
 #   proxStream.close();
 # }
 
-sub close {
-	my $self = shift;
-	$self->SUPER::close;
-	$self->{_prox_stream}->close;
-}
-
 =head2 next_position
 
 	my $next = $seg_term_pos->next_position;
@@ -103,7 +98,7 @@ sub close {
 sub next_position {
 	my $self = shift;
 	$self->{_prox_count}--;
-	return $self->{position} += $self->{_prox_stream}->read_vint;
+	return $self->{position} += $self->{_prox_stream}->[ $self->{_prox_ptr}++ ];
 }
 
 =head2 skipping_doc
@@ -119,7 +114,7 @@ sub next_position {
 
 sub skipping_doc {
 	my $self = shift;
-	$self->{_prox_stream}->read_vint for 1 .. $self->freq;
+	$self->{_prox_ptr} += $self->freq;
 }
 
 # public final boolean next() throws IOException {
@@ -136,7 +131,7 @@ sub skipping_doc {
 
 sub next {
 	my $self = shift;
-	$self->{_prox_stream}->read_vint for 1 .. $self->{_prox_count};
+	$self->{_prox_ptr} += $self->{_prox_count};
 	if ($self->SUPER::next()) {
 		$self->{_prox_count} = $self->freq;
 		$self->{position}    = 0;

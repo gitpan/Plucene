@@ -1,4 +1,10 @@
+1.24 - Wed 20 July 2005
+
+  - use pack and unpack to read/write frq and prx files [Minty]
+  - Small doc changes [Minty / TB]
+
 1.23 - Sun 17 July 2005
+
   - Stop rolling our own sorting in SegmentMerger/merge_term_infos [Minty]
   - Replace sequence of read_byte() calls in SegmentReader with one
     direct call to read() [Aaron Crane]

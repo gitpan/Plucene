@@ -51,6 +51,9 @@ The synopsis above gives a rough indication of how to use the engine
 in simple cases. See L<Plucene::Simple> for one example of tying it
 all together.
 
+The tests shipped with Plucene provide a variety of other examples of
+how use this.
+
 =head1 EXTENSIONS
 
 Plucene comes shipped with some default Analyzers. However it is
@@ -73,8 +76,10 @@ and how to extend it.
 =head1 COMPATIBILITY
 
 For the most part Lucene and Plucene indexes are created in the same
-manner. However, due to some minor implementation details, the indexes
-will not always be compatible. 
+manner. However, due to current implementation details, the indexes will
+generally not be compatible. It should theoretically be possible to
+convert index files in either direction between Plucene and Lucene, but
+no tools are currently provided to do so.
 
 As Plucene is still undergoing development, we cannot guarantee index
 format compatibility across releases. If you're using Plucene in
@@ -82,10 +87,9 @@ production code, you need to ensure that you can recreate the indexes.
 
 =head1 MISSING FEATURES
 
-As this is an initial release, the following features have not yet been
-implemented:
+The following features have not yet been fully implemented:
 
-=over 3
+=over 4
 
 =item *
 
@@ -114,7 +118,8 @@ Original Java Lucene by Doug Cutting and others.
 
 =head1 THANKS
 
-The development of Plucene was funded by Kasei L<http://www.kasei.com/>
+The initial development and ongoing maintenance of Plucene has been
+funded and supported by Kasei L<http://www.kasei.com/>
 
 =head1 LICENSE
 
@@ -125,6 +130,6 @@ This software is licensed under the same terms as Perl itself.
 use strict;
 use warnings;
 
-our $VERSION = "1.23";
+our $VERSION = "1.24";
 
 1;

@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name: Plucene
-version: 1.23
+version: 1.24
 license: unknown
 distribution_type: module
 requires:
@@ -27,7 +27,7 @@ conflicts: {}
 provides:
   Plucene:
     file: lib/Plucene.pm
-    version: 1.23
+    version: 1.24
   Plucene::Analysis::Analyzer:
     file: lib/Plucene/Analysis/Analyzer.pm
   Plucene::Analysis::CharTokenizer:

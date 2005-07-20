@@ -23,6 +23,7 @@ use strict;
 use warnings;
 no warnings 'uninitialized';
 
+use File::Slurp;
 use Plucene::Index::FieldInfos;
 use Plucene::Index::FieldsWriter;
 use Plucene::Index::SegmentMergeInfo;
@@ -97,20 +98,11 @@ sub _merge_fields {
 sub _merge_terms {
 	my $self    = shift;
 	my $segment = $self->{segment};
-	$self->{freq_output} =
-		Plucene::Store::OutputStream->new("$self->{dir}/$segment.frq");
-	$self->{prox_output} =
-		Plucene::Store::OutputStream->new("$self->{dir}/$segment.prx");
 	$self->{term_infos_writer} =
 		Plucene::Index::TermInfosWriter->new($self->{dir}, $segment,
 		$self->{field_infos});
-	$self->_merge_term_infos;
-}
 
-sub _merge_term_infos {
-	my $self = shift;
 	my $base = 0;
-
 	my @queue;
 	for my $reader (@{ $self->{readers} }) {
 		my $smi =
@@ -125,9 +117,8 @@ sub _merge_term_infos {
 		my $index = 0;
 		foreach my $smi (@queue) {
 			while (my $term = $smi->term) {
-				push(
-					@{ $pool{ $term->{field} }->{ $term->{text} } },
-					[ $term, $index, $smi->term_enum->term_info->clone ]);
+				push @{ $pool{ $term->{field} }->{ $term->{text} } },
+					[ $term, $index, $smi->term_enum->term_info->clone ];
 				$smi->next;
 			}
 			++$index;
@@ -135,11 +126,11 @@ sub _merge_term_infos {
 	}
 
 	# Now, by sorting our hash, we deal with each term in order:
+	my (@freqs, @proxs);
 	foreach my $field (sort keys %pool) {
 		foreach my $term (sort keys %{ $pool{$field} }) {
 			my @min = @{ $pool{$field}->{$term} };
-			my ($fp, $pp) =
-				($self->{freq_output}->tell, $self->{prox_output}->tell);
+			my ($fp, $pp) = (scalar(@freqs), scalar(@proxs));
 
 			# inlined append_postings
 			my ($df, $last_doc);
@@ -148,8 +139,7 @@ sub _merge_term_infos {
 				my $postings = $smi->postings;
 				my $base     = $smi->base;
 				my $docmap   = $smi->doc_map;
-				my $ti       = $item->[2];
-				$postings->seek($ti);
+				$postings->seek($item->[2]);
 				while ($postings->next) {
 					my $doc = $base + (
 						$docmap
@@ -157,24 +147,21 @@ sub _merge_term_infos {
 						: $postings->doc
 					);
 					die "Docs out of order ($doc < $last_doc)" if $doc < $last_doc;
+
 					my $doc_code = ($doc - $last_doc) << 1;
 					$last_doc = $doc;
 					my $freq = $postings->freq;
-					if ($freq == 1) {
-						$self->{freq_output}->write_vint($doc_code | 1);
-					} else {
-						$self->{freq_output}->write_vint($doc_code);
-						$self->{freq_output}->write_vint($freq);
-					}
+					push @freqs, ($freq == 1) ? ($doc_code | 1) : ($doc_code, $freq);
+
 					my $last_pos = 0;
 					for (0 .. $freq - 1) {
 						my $pos = $postings->next_position;
-						$self->{prox_output}->write_vint($pos - $last_pos);
+						push @proxs, $pos - $last_pos;
 						$last_pos = $pos;
 					}
-					$df++;
-				}    # end while there are postings
-			}    # end foreach $smi (reader) that contains the current term
+					++$df;
+				}
+			}
 
 			# inlined _merge_term_info
 			$self->{term_infos_writer}->add(
@@ -187,6 +174,8 @@ sub _merge_term_infos {
 		}    # end foreach term
 	}    # end foreach field
 
+	write_file("$self->{dir}/$segment.frq" => pack('(w)*', @freqs));
+	write_file("$self->{dir}/$segment.prx" => pack('(w)*', @proxs));
 	$self->{term_infos_writer}->break_ref;
 }
 

@@ -40,6 +40,7 @@ The segment reader class.
 use strict;
 use warnings;
 
+use File::Slurp;
 use Plucene::Bitvector;
 use Plucene::Index::FieldInfos;
 use Plucene::Index::FieldsReader;
@@ -86,11 +87,9 @@ sub new {
 	}
 
 	$self->freq_stream(
-		Plucene::Store::InputStream->new("$self->{directory}/$segment.frq"))
-		or die $!;
+		[ unpack "(w)*", read_file("$self->{directory}/$segment.frq") ]);
 	$self->prox_stream(
-		Plucene::Store::InputStream->new("$self->{directory}/$segment.prx"))
-		or die $!;
+		[ unpack "(w)*", read_file("$self->{directory}/$segment.prx") ]);
 	$self->_open_norms;
 	return $self;
 }

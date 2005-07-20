@@ -11,7 +11,7 @@ shift(@ARGV)
 	if $ARGV[0] && $ARGV[0] eq 'Build';    # accomodate with CPAN autoinstall
 use Module::Build;
 
-our $LAST_MAJOR_CHANGE = "1.22";
+our $LAST_MAJOR_CHANGE = "1.24";
 
 eval "require Plucene";
 unless ($@) {

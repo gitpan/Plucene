@@ -22,6 +22,7 @@ This is the document writer class.
 use strict;
 use warnings;
 
+use File::Slurp;
 use Plucene::Index::FieldInfos;
 use Plucene::Index::FieldsWriter;
 use Plucene::Index::Term;
@@ -121,10 +122,7 @@ sub _add_position {
 
 sub _write_postings {
 	my ($self, $segment, @postings) = @_;
-	my $freq =
-		Plucene::Store::OutputStream->new("$self->{directory}/$segment.frq");
-	my $prox =
-		Plucene::Store::OutputStream->new("$self->{directory}/$segment.prx");
+	my (@freqs, @proxs);
 	my $tis =
 		Plucene::Index::TermInfosWriter->new($self->{directory}, $segment,
 		$self->{field_infos});
@@ -132,25 +130,23 @@ sub _write_postings {
 
 	for my $posting (@postings) {
 		$ti->doc_freq(1);
-		$ti->freq_pointer($freq->tell);
-		$ti->prox_pointer($prox->tell);
+		$ti->freq_pointer(scalar @freqs);
+		$ti->prox_pointer(scalar @proxs);
 
 		$tis->add($posting->term, $ti);
 		my $f = $posting->freq;
-		if ($f == 1) {    # Curious micro-optimization
-			$freq->write_vint(1);
-		} else {
-			$freq->write_vint(0);
-			$freq->write_vint($f);
-		}
+		push @freqs, ($f == 1) ? 1 : (0, $f);
 		my $last_pos  = 0;
 		my $positions = $posting->positions;
-		for my $j (0 .. $f) {
+		for my $j (0 .. $f - 1) {
 			my $pos = $positions->[$j] || 0;
-			$prox->write_vint($pos - $last_pos);
+			push @proxs, $pos - $last_pos;
 			$last_pos = $pos;
 		}
 	}
+
+	write_file("$self->{directory}/$segment.frq" => pack('(w)*', @freqs));
+	write_file("$self->{directory}/$segment.prx" => pack('(w)*', @proxs));
 	$tis->break_ref;
 }
 

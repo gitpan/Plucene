@@ -52,14 +52,12 @@ Get / set these attributes.
 sub new {
 	my $self       = shift;
 	my $seg_reader = shift;
-	my $x          = bless {
+	return bless {
 		parent       => $seg_reader,
-		freq_stream  => $seg_reader->freq_stream->clone,
+		freq_stream  => $seg_reader->freq_stream,    # listref
 		deleted_docs => $seg_reader->deleted_docs,
 		doc          => 0,
-	}, $self;
-	$x->freq_stream->seek(0, 0);
-	$x;
+	} => $self;
 }
 
 =head2 seek
@@ -87,7 +85,7 @@ sub _seek {
 	}
 	$self->freq_count($ti->doc_freq);
 	$self->doc(0);
-	$self->freq_stream->seek($ti->freq_pointer, 0);
+	$self->{ptr} = $ti->freq_pointer;    # offset in our array
 }
 
 =head2 skipping_doc
@@ -100,14 +98,14 @@ sub skipping_doc { }
 
 sub _read_one {
 	my $self     = shift;
-	my $doc_code = $self->freq_stream->read_vint;
+	my $doc_code = $self->freq_stream->[ $self->{ptr}++ ];
 
 	# A sequence that smacks of overoptimization
 	$self->{doc} += $doc_code >> 1;
 	if ($doc_code & 1) {
 		$self->freq(1);
 	} else {
-		$self->freq($self->freq_stream->read_vint);
+		$self->freq($self->freq_stream->[ $self->{ptr}++ ]);
 	}
 	$self->{freq_count}--;
 }
