@@ -1,8 +1,9 @@
---- #YAML:1.0
+---
 name: Plucene
-version: 1.24
+version: 1.25
+author: ~
+abstract: A Perl port of the Lucene search engine
 license: unknown
-distribution_type: module
 requires:
   Bit::Vector::Minimal: 1.0
   Carp: 0
@@ -19,15 +20,13 @@ requires:
   Memoize: 1.01
   Tie::Array::Sorted: 1.1
   Time::Piece: 1.08
-recommends: {}
 build_requires:
   File::Slurp: 2002.1031
   Test::Harness: 2.30
-conflicts: {}
 provides:
   Plucene:
     file: lib/Plucene.pm
-    version: 1.24
+    version: 1.25
   Plucene::Analysis::Analyzer:
     file: lib/Plucene/Analysis/Analyzer.pm
   Plucene::Analysis::CharTokenizer:
@@ -184,4 +183,4 @@ provides:
     file: lib/Plucene/TestCase.pm
   Plucene::Utils:
     file: lib/Plucene/Utils.pm
-generated_by: Module::Build version 0.21
+generated_by: Module::Build version 0.26

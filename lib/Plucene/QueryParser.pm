@@ -76,8 +76,8 @@ sub parse {
 			$item->{conj} = "OR"
 				if $item->{conj} eq "||";
 		}
-		if    (s/^\+//)            { $item->{mods} = "REQ"; }
-		elsif (s/^(-|!|NOT)\s*//i) { $item->{mods} = "NOT"; }
+		if (s/^\+//) { $item->{mods} = "REQ"; }
+		elsif (s/^(-|!|NOT(?=[^\w:]))\s*//i) { $item->{mods} = "NOT"; }
 		else { $item->{mods} = "NONE"; }
 
 		if (s/^([^\s(":]+)://) { $item->{field} = $1 }
@@ -123,9 +123,12 @@ sub parse {
 
 sub _tokenize {
 	my ($self, $image) = @_;
-	my $stream = $self->{analyzer}->tokenstream({
+	my $stream = $self->{analyzer}->tokenstream(
+		{
 			field  => $self->{default},
-			reader => IO::Scalar->new(\$image) });
+			reader => IO::Scalar->new(\$image)
+		}
+	);
 	my @words;
 	while (my $x = $stream->next) { push @words, $x->text }
 	join(" ", @words);
@@ -182,11 +185,13 @@ sub add_clause {
 	}
 	require Plucene::Search::BooleanClause;
 	push @$clauses,
-		Plucene::Search::BooleanClause->new({
+		Plucene::Search::BooleanClause->new(
+		{
 			prohibited => $prohibited,
 			required   => $required,
 			query      => $q
-		});
+		}
+		);
 }
 
 package Plucene::QueryParser::Term;
@@ -203,9 +208,12 @@ sub to_plucene {
 
 sub set_term {
 	my ($self, $field) = @_;
-	$self->{pl_term} = Plucene::Index::Term->new({
+	$self->{pl_term} = Plucene::Index::Term->new(
+		{
 			field => (exists $self->{field} ? $self->{field} : $field),
-			text => $self->{term} });
+			text => $self->{term}
+		}
+	);
 }
 
 sub set_boost {
@@ -227,10 +235,12 @@ sub to_plucene {
 
 	my $phrase = Plucene::Search::PhraseQuery->new;
 	for my $word (@words) {
-		my $term = Plucene::Index::Term->new({
+		my $term = Plucene::Index::Term->new(
+			{
 				field => (exists $self->{field} ? $self->{field} : $field),
 				text => $word
-			});
+			}
+		);
 		$phrase->add($term);
 	}
 	if (exists $self->{slop}) {

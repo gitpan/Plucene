@@ -74,6 +74,8 @@ Makefile.PL
 MANIFEST
 META.yml			Module meta-data (added by MakeMaker)
 README
+t/98_pod_coverage.t
+t/99_pod.t
 t/analyzers.t
 t/data/book1
 t/data/book10
@@ -123,4 +125,3 @@ t/tokenfilter.t
 t/tokenizer.t
 t/utf8.t
 t/words.txt
-t/99_pod.t

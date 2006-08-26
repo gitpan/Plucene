@@ -1,3 +1,8 @@
+
+1.25 - Mon Sep  5 09:24:00 UTC 2005
+
+  - Stop QueryParser turning 'notice' into 'NOT ice' (RT#14450)
+
 1.24 - Wed 20 July 2005
 
   - use pack and unpack to read/write frq and prx files [Minty]

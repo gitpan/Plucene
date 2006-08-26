@@ -40,6 +40,7 @@ my @or_tests = (
 
 my @and_tests = (
 	[ "test",             "Term",    "text:test" ],
+	[ "notice",           "Term",    "text:notice" ],
 	[ "newfield:test",    "Term",    "newfield:test" ],
 	[ "one two",          "Boolean", "+text:one +text:two" ],
 	[ "one.two",          "Phrase",  "text:\"one two\"" ],
@@ -68,7 +69,7 @@ sub do_tests {
 		my ($input, $type, $round_trip) = @$_;
 		my $query = $parser->parse($input);
 		isa_ok($query, "Plucene::Search::${type}Query");
-		is($query->to_string(""), $round_trip, "$input parsed OK");
+		is($query->to_string(""), $round_trip, "$input parsed OK ($round_trip)");
 	}
 }
 

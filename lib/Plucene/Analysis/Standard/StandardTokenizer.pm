@@ -51,6 +51,12 @@ sub token_re {
     /x;
 }
 
+=head2 normalize
+
+Remove 's and .
+
+=cut
+
 sub normalize {
 	my $class = shift;
 
